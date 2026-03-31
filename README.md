@@ -5,10 +5,11 @@ guidelines, style rules, and MkDocs project scaffolding.
 
 ## Installation
 
-Install the plugin with the following command in Claude Code:
+Install the plugin with the following commands in Claude Code:
 
 ```
-/plugin install pgedge-docs-skill@pgedge
+/plugin marketplace add pgEdge/pgedge-docs-skill
+/plugin install pgedge-docs-skill@pgedge-plugins
 ```
 
 ## Features

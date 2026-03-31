@@ -1,0 +1,16 @@
+{
+  "name": "pgedge-plugins",
+  "owner": {
+    "name": "pgEdge, Inc.",
+    "email": "support@pgedge.com"
+  },
+  "plugins": [
+    {
+      "name": "pgedge-docs-skill",
+      "source": "./",
+      "description": "pgEdge documentation writing skill with MkDocs project scaffolding and style guidelines",
+      "version": "1.0.0",
+      "homepage": "https://github.com/pgEdge/pgedge-docs-skill"
+    }
+  ]
+}
