@@ -13,7 +13,9 @@ pgEdge projects and repositories.
 
 When setting up documentation for a new pgEdge project, copy the
 template files from the `template/` directory alongside this SKILL.md
-file into the target project.
+file into the target project. Use `cp -r` to copy the entire template
+directory tree in one operation so that all subdirectories are created
+automatically.
 
 ### Template Contents
 
