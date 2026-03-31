@@ -30,6 +30,33 @@ tasks. You can also invoke it explicitly:
 /pgedge-skills:pgedge-docs
 ```
 
+#### Example Prompts
+
+**Scaffolding a new docs site:**
+
+```
+Set up MkDocs documentation scaffolding for the pgEdge Vectorizer
+project in ~/git/vectorizer. The docs should cover installation,
+configuration, usage, and a function reference.
+```
+
+**Reviewing existing docs:**
+
+```
+Review the docs/ directory for style compliance. Check line length,
+heading structure, list formatting, and product name usage, and fix
+any issues you find.
+```
+
+**Documenting a new feature:**
+
+```
+Document the new cache_stats view for Spock. It exposes total
+entries, expired entries, cache size in MB, and average access
+count. Add it to the existing monitoring page and update the
+changelog.
+```
+
 ### pgedge-psql (beta)
 
 PostgreSQL `psql` skill that:
