@@ -1,0 +1,11 @@
+{
+  "name": "pgedge-docs-skill",
+  "description": "pgEdge documentation writing skill with MkDocs project scaffolding and style guidelines",
+  "version": "1.0.0",
+  "author": {
+    "name": "pgEdge, Inc."
+  },
+  "homepage": "https://github.com/pgEdge/pgedge-docs-skill",
+  "repository": "https://github.com/pgEdge/pgedge-docs-skill",
+  "license": "PostgreSQL"
+}
