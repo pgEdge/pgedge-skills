@@ -1,16 +1,16 @@
 {
-  "name": "pgedge-plugins",
+  "name": "pgedge-skills",
   "owner": {
     "name": "pgEdge, Inc.",
     "email": "support@pgedge.com"
   },
   "plugins": [
     {
-      "name": "pgedge-docs-skill",
+      "name": "pgedge-skills",
       "source": "./",
-      "description": "pgEdge documentation writing skill with MkDocs project scaffolding and style guidelines",
+      "description": "pgEdge Claude Code skills collection",
       "version": "1.0.0",
-      "homepage": "https://github.com/pgEdge/pgedge-docs-skill"
+      "homepage": "https://github.com/pgEdge/pgedge-skills"
     }
   ]
 }

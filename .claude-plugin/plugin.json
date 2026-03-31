@@ -1,11 +1,11 @@
 {
-  "name": "pgedge-docs-skill",
-  "description": "pgEdge documentation writing skill with MkDocs project scaffolding and style guidelines",
+  "name": "pgedge-skills",
+  "description": "pgEdge Claude Code skills collection",
   "version": "1.0.0",
   "author": {
     "name": "pgEdge, Inc."
   },
-  "homepage": "https://github.com/pgEdge/pgedge-docs-skill",
-  "repository": "https://github.com/pgEdge/pgedge-docs-skill",
+  "homepage": "https://github.com/pgEdge/pgedge-skills",
+  "repository": "https://github.com/pgEdge/pgedge-skills",
   "license": "PostgreSQL"
 }
