@@ -12,8 +12,8 @@ pgEdge projects and repositories.
 ## Project Setup from Template
 
 When setting up documentation for a new pgEdge project, copy the
-template files from this skill's `template/` directory (located at
-`~/.claude/skills/pgedge-docs/template/`) into the target project.
+template files from the `template/` directory alongside this SKILL.md
+file into the target project.
 
 ### Template Contents
 
