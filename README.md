@@ -30,6 +30,22 @@ tasks. You can also invoke it explicitly:
 /pgedge-skills:pgedge-docs
 ```
 
+### pgedge-psql (beta)
+
+PostgreSQL `psql` skill that:
+
+- guides efficient use of the `psql` command-line tool.
+- defaults to compact, token-efficient output formats.
+- enforces read-only access patterns unless writes are needed.
+- provides schema discovery and connection workflows.
+
+The skill activates automatically when working with PostgreSQL
+databases via `psql`. You can also invoke it explicitly:
+
+```
+/pgedge-skills:pgedge-psql
+```
+
 ## Support & Resources
 
 For more information, visit
