@@ -396,11 +396,11 @@ Include a link to docs.pgedge.com: "For more information, visit
 
 ## Copyright Notice
 
-The copyright notice in `mkdocs.yml` uses the format
-`Copyright &copy; 2025 - <current year> pgEdge, Inc`. When setting up
-a new project or editing an existing one, always update the end year
-to the current year. The template uses `<CURRENT YEAR>` as a
-placeholder; replace it with the actual year at setup time.
+Copyright years appear in three template files: `mkdocs.yml`,
+`LICENSE.md`, and `docs/LICENSE.md`. All three use the
+`<CURRENT YEAR>` placeholder. When setting up a new project or
+editing an existing one, replace every `<CURRENT YEAR>` placeholder
+with the actual current year.
 
 ## Changelog Format
 
