@@ -444,6 +444,50 @@ nav:
 Nested details can be in the same file as the parent section (e.g.,
 Prerequisites can live in the same file as Installation).
 
+## Verification Against Code
+
+After writing or editing documentation, launch a sub-agent to verify
+that the documentation accurately and completely reflects what the
+code actually implements. This verification step is mandatory; do not
+skip it.
+
+### What to Verify
+
+The sub-agent should read the relevant source code and confirm:
+
+- every command line option, flag, and argument documented on the page
+  exists in the code, and every option in the code appears in the
+  documentation.
+- every configuration option, environment variable, or setting
+  documented on the page exists in the code, and every such option in
+  the code appears in the documentation.
+- default values, valid ranges, and accepted value types match what
+  the code defines.
+- descriptions of behavior (what a flag does, what a config controls)
+  match the actual implementation.
+- documented function signatures, parameters, and return values match
+  the source code.
+- any version requirements, prerequisites, or compatibility notes are
+  consistent with the codebase.
+
+### How to Run Verification
+
+After completing documentation changes, launch a sub-agent with a
+prompt that identifies the documentation file(s) and the
+corresponding source file(s), and asks the sub-agent to:
+
+1. Read the documentation that was written or modified.
+2. Read the corresponding source code that implements the documented
+   functionality.
+3. Compare the two and report any discrepancies - missing items,
+   incorrect defaults, mismatched descriptions, or outdated
+   information.
+4. List any options, flags, parameters, or settings found in the code
+   that are not documented.
+5. List any documented items that do not exist in the code.
+
+Fix all discrepancies before considering the documentation complete.
+
 ## Review Checklist
 
 When reviewing documentation, verify:
@@ -463,3 +507,8 @@ When reviewing documentation, verify:
 - [ ] Hyperlinks not split across lines
 - [ ] Blank lines before all lists
 - [ ] Active voice throughout
+- [ ] All command line options/flags in the code are documented
+- [ ] All configuration options in the code are documented
+- [ ] Default values and valid ranges match the code
+- [ ] Behavioral descriptions match the actual implementation
+- [ ] Sub-agent verification against source code completed
