@@ -141,7 +141,9 @@ docs/
 ## Line Length and Wrapping
 
 - Wrap lines at **79 characters**.
-- Lines should be as long as possible while staying within the limit.
+- Wrap prose as close to 79 characters as possible without exceeding
+  79 characters; the only exceptions are hyperlinks and table content,
+  which must not be split (see the following bullets).
 - **Never** split hyperlinks across lines. The complete markdown link
   syntax `[text](URL)` must remain unbroken on a single line, even if
   it exceeds 79 characters. Break prose before or after the link.
@@ -161,11 +163,17 @@ docs/
 
 ### What to Avoid
 
-- Do not use bold font as headings; bold within inline text is fine.
-- Do not use hashtags in front of steps in numbered lists.
-- Do not use fragments in bulleted or stepped lists.
+- Do not use bold font as headings; MkDocs sometimes misinterprets
+  bold text as a heading and adds it to the navigation pane. Bold
+  within inline text is fine and will not be misinterpreted.
+- Do not use hashtags in front of steps in numbered lists; every step
+  containing a `#` is added to the navigation pane on the upper-right
+  side of the documentation page.
+- Do not use fragments in bulleted or stepped lists; for example,
+  avoid items of the form "**Semantic matching:** uses pgvector for
+  similarity-based cache lookups".
 - Remove bold highlighted text content that is not inline; some
-  software misinterprets it as a heading.
+  software misinterprets it as a heading level.
 
 ## Heading Structure
 
@@ -179,18 +187,21 @@ docs/
 
 ## Bulleted Lists
 
+- Bulleted lists should complete sentences ending with periods.
 - Use a lead-in sentence before the list that ends with a colon.
 - The lead-in and bullet items together should form grammatically
   complete sentences.
 - Keep lead-in sentences concise; use "include:" or "is useful for:"
-  rather than verbose phrases like "include the following operations:".
+  rather than verbose phrases like "include the following operations:"
+  or "is useful for the following purposes:".
+- When bullet items are gerunds (verb forms ending in -ing), they
+  should work grammatically with the lead-in sentence.
 - Items that complete the opening sentence start with a lowercase
   letter (unless a proper noun or code element) and end with a period.
 - Items that are fragments or do not complete the introductory sentence
   start with uppercase and do not end in punctuation.
-- Bullet items end only with periods, never semicolons.
-- When bullet items are gerunds, they should work grammatically with
-  the lead-in sentence.
+- Bullet items end only with periods, never semicolons; semicolons are
+  reserved for linking related ideas within sentences.
 - Always leave a blank line before the first item in any list.
 
 Correct example:
@@ -215,14 +226,20 @@ The view includes the following metrics:
 
 ## Numbered Lists
 
-- Reserve numbered lists for sequential procedures where order is
-  critical.
+- Reserve numbered lists for sequential procedures (installation
+  steps, setup instructions, troubleshooting workflows) where order
+  is critical.
+- A numbered list should always consist of steps that must be
+  performed in the order listed; if the steps can be performed in a
+  random order and still work, they belong in a bulleted list.
 - Convert non-sequential content (feature lists, examples,
   comparisons) to bulleted lists or narrative format.
 - Use an introductory sentence before each numbered list.
 - Leave a blank line before the first item.
-- Each entry should be a complete, correct sentence.
-- Indent code blocks properly within numbered list items.
+- Each entry should introduce the step with a complete and correct
+  sentence.
+- Indent code blocks properly within numbered list items, formatted
+  using the rules above.
 - Do not use bold font in numbered lists.
 
 ## Code Formatting
@@ -240,11 +257,12 @@ The view includes the following metrics:
   ````
 
 - `stdio`, `stdin`, `stdout`, and `stderr` should always be in
-  backticks.
-- Capitalize SQL keywords; use lowercase for variables.
-- Include links to third-party software documentation where referenced.
-- Include links to the pgEdge GitHub repo when referring to cloning or
-  working on the project.
+  backticks (courier font).
+- Capitalize command keywords; use lowercase for variables.
+- Include links to third-party software installation and
+  documentation pages where referenced.
+- Include links to the pgEdge GitHub repo when referring to cloning
+  the repo or working on the project.
 - Do **not** create links to github.io.
 
 ## Tables
@@ -252,10 +270,15 @@ The view includes the following metrics:
 - Every table must have an introductory sentence immediately before it,
   using the pattern: "The following table [describes/shows/compares]
   X:".
-- No icons or emojis in tables. Replace emoji characters with
-  descriptive text (Fast, Good, High, etc.).
+- The introductory sentence should be in active voice and explain what
+  the table contains.
+- No icons or emojis in tables. Remove all emoji and icon characters
+  (for example, lightning bolts, checkmarks, floppy disks) from table
+  cells and replace with descriptive text such as Fast, Good, or High.
+- Keep table content professional and accessible.
 - Use plain text only; no bold font in cells.
-- Avoid special characters that may not render in all formats.
+- Avoid special characters that may not render correctly in all
+  formats.
 - Use words rather than symbols to convey meaning.
 
 ## Hyperlinks
