@@ -1,0 +1,14 @@
+http:
+  address: ":<HTTP_PORT>"
+  tls:
+    enabled: false
+  cors_origin: ""
+  hsts_enabled: false
+
+auth:
+  max_failed_attempts_before_lockout: 10
+  rate_limit_window_minutes: 15
+  rate_limit_max_attempts: 10
+  session_lifetime_hours: 24
+
+data_dir: ./data

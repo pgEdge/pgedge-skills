@@ -1,0 +1,9 @@
+{
+    "scaffold_version": "1.0",
+    "project_name": "<PROJECT_NAME>",
+    "project_slug": "<PROJECT_SLUG>",
+    "binary_name": "<BINARY_NAME>",
+    "module_path": "<MODULE_PATH>",
+    "http_port": "<HTTP_PORT>",
+    "ellie_wired": false
+}
