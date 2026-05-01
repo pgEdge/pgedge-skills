@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"<MODULE_PATH>/server/src/internal/auth"
+	"<MODULE_PATH>/server/src/internal/openapi"
 )
 
 // Deps bundles router dependencies.
@@ -25,6 +26,8 @@ func NewRouter(d Deps) http.Handler {
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
+	mux.HandleFunc("GET /api/v1/openapi.json", openapiHandler)
+
 	mux.Handle("POST /api/v1/auth/login",
 		rateLimit(d.LoginLimiter, http.HandlerFunc(d.Handlers.Login)))
 	mux.HandleFunc("POST /api/v1/auth/logout", d.Handlers.Logout)
@@ -36,6 +39,16 @@ func NewRouter(d Deps) http.Handler {
 		d.Middleware.Required(http.HandlerFunc(helloHandler)))
 
 	return mux
+}
+
+func openapiHandler(w http.ResponseWriter, _ *http.Request) {
+	b, err := openapi.MarshalJSON()
+	if err != nil {
+		http.Error(w, `{"error":"openapi marshal failed"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write(b)
 }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {

@@ -177,6 +177,23 @@ func TestRouter_LogoutNoCookie(t *testing.T) {
 	}
 }
 
+// ---- OpenAPI endpoint ----
+
+func TestRouter_OpenAPIPublic(t *testing.T) {
+	r := NewRouter(testDeps(t))
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, httptest.NewRequest("GET", "/api/v1/openapi.json", nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("code = %d", rec.Code)
+	}
+	if ct := rec.Header().Get("Content-Type"); ct != "application/json" {
+		t.Errorf("content-type = %q", ct)
+	}
+	if !strings.Contains(rec.Body.String(), `"openapi"`) {
+		t.Errorf("body missing openapi key: %s", rec.Body.String()[:200])
+	}
+}
+
 // ---- Login with malformed JSON ----
 
 func TestRouter_LoginMalformedJSON(t *testing.T) {
