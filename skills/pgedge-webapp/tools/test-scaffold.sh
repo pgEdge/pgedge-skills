@@ -37,7 +37,7 @@ find "$TARGET" -depth -name '*<binary>*' | while read -r path; do
 done
 
 # Replace content placeholders. Use a portable sed invocation by writing a
-# tiny perl-based replacer to avoid GNU/BSD sed differences.
+# tiny Python-based replacer to avoid GNU/BSD sed differences.
 PROJECT_NAME="$PROJECT_NAME" \
 PROJECT_SLUG="$PROJECT_SLUG" \
 BINARY_NAME="$BINARY_NAME" \
