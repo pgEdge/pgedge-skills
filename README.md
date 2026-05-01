@@ -73,6 +73,31 @@ databases via `psql`. You can also invoke it explicitly:
 /pgedge-skills:pgedge-psql
 ```
 
+### pgedge-webapp
+
+Full-stack web app scaffolding skill that:
+
+- generates a Go (sqlite, bcrypt) backend plus React (MUI, TypeScript)
+  frontend.
+- locks in pgEdge design conventions: theme, header, login, form-label
+  CSS, accessibility patterns.
+- ships a Helm chart, Dockerfile, docker-compose, and CI workflows.
+- enforces 90% test coverage via vitest thresholds and a Go coverage
+  gate.
+
+The skill activates automatically when starting a new full-stack
+project. Invoke explicitly with:
+
+```
+/pgedge-skills:pgedge-webapp
+```
+
+#### Example Prompt
+
+```
+Scaffold a new pgEdge web app at ~/git/my-app called "My App".
+```
+
 ## Support & Resources
 
 For more information, visit
