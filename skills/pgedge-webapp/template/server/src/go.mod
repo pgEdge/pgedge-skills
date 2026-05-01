@@ -1,6 +1,6 @@
 module <MODULE_PATH>/server/src
 
-go 1.23
+go 1.26
 
 require (
 	golang.org/x/crypto v0.27.0

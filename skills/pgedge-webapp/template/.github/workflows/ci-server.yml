@@ -14,7 +14,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                go-version: ['1.23', '1.24']
+                go-version: ['1.26']
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-go@v5
@@ -24,9 +24,7 @@ jobs:
               working-directory: server/src
             - run: go vet ./...
               working-directory: server/src
-              if: matrix.go-version == '1.24'
             - name: Check gofmt
-              if: matrix.go-version == '1.24'
               working-directory: server/src
               run: |
                   out=$(gofmt -l .)
@@ -34,7 +32,6 @@ jobs:
                       echo "Unformatted: $out"; exit 1
                   fi
             - uses: golangci/golangci-lint-action@v6
-              if: matrix.go-version == '1.24'
               with:
                   version: v2.1.6
                   working-directory: server

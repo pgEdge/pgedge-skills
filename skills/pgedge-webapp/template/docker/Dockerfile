@@ -6,7 +6,7 @@ RUN npm ci
 COPY client/ ./
 RUN npm run build
 
-FROM golang:1.23-alpine AS server-builder
+FROM golang:1.26-alpine AS server-builder
 WORKDIR /build/server/src
 COPY server/src/go.mod server/src/go.sum ./
 RUN go mod download

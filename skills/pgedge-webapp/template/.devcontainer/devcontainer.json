@@ -2,7 +2,7 @@
     "name": "<PROJECT_NAME>",
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
     "features": {
-        "ghcr.io/devcontainers/features/go:1": { "version": "1.23" },
+        "ghcr.io/devcontainers/features/go:1": { "version": "1.26" },
         "ghcr.io/devcontainers/features/node:1": { "version": "24" },
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
         "ghcr.io/devcontainers/features/common-utils:2": {}

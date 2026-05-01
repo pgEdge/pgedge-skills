@@ -12,6 +12,10 @@
 #
 set -euo pipefail
 
+# Force auto-toolchain so the script works on hosts that don't yet ship
+# Go 1.26. Override only with explicit HARNESS_GOTOOLCHAIN if needed.
+export GOTOOLCHAIN="${HARNESS_GOTOOLCHAIN:-auto}"
+
 SELECTOR="${1:-./...}"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"

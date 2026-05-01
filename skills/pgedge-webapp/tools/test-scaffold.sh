@@ -8,6 +8,11 @@
 #
 set -euo pipefail
 
+# Force auto-toolchain so the harness works on hosts that don't yet ship
+# Go 1.26. The scaffold's go.mod pins `go 1.26`. Override only with explicit
+# HARNESS_GOTOOLCHAIN if you really want a different value.
+export GOTOOLCHAIN="${HARNESS_GOTOOLCHAIN:-auto}"
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 TEMPLATE_DIR="$REPO_ROOT/skills/pgedge-webapp/template"
 TOOLS_DIR="$REPO_ROOT/skills/pgedge-webapp/tools"
