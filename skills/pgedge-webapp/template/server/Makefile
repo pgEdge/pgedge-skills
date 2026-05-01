@@ -1,4 +1,4 @@
-.PHONY: build test coverage coverage-check lint vet fmt clean
+.PHONY: build test coverage coverage-check lint vet fmt clean openapi
 
 build:
 	cd src && go build -o ../../bin/<BINARY_NAME> ./cmd/<BINARY_NAME>
@@ -26,3 +26,8 @@ fmt:
 
 clean:
 	rm -f src/coverage.out
+
+# Regenerate the static OpenAPI specification from the programmatic builder.
+openapi:
+	cd src && go run ./cmd/<BINARY_NAME> --generate-openapi-spec > ../../docs/docs/api/openapi.json
+	@echo "OpenAPI spec written to docs/docs/api/openapi.json"

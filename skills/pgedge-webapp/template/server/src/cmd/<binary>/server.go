@@ -18,6 +18,7 @@ import (
 	"<MODULE_PATH>/server/src/internal/auth"
 	"<MODULE_PATH>/server/src/internal/config"
 	"<MODULE_PATH>/server/src/internal/logging"
+	"<MODULE_PATH>/server/src/internal/openapi"
 	"<MODULE_PATH>/server/src/pkg/fileutil"
 )
 
@@ -27,6 +28,17 @@ func runServer(ctx context.Context, args []string, stdout, stderr io.Writer) err
 	flags, err := ParseFlags(args, defaultPath)
 	if err != nil {
 		return err
+	}
+
+	if flags.GenerateOpenAPISpec {
+		b, err := openapi.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("openapi marshal: %w", err)
+		}
+		if _, err := stdout.Write(append(b, '\n')); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	log := logging.New(stderr, flags.Debug)

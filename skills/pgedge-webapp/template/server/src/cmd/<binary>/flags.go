@@ -18,8 +18,9 @@ type Flags struct {
 	ChainFile         string
 	DataDir           string
 	Debug             bool
-	AdminPasswordFile string
-	Init              bool
+	AdminPasswordFile   string
+	Init                bool
+	GenerateOpenAPISpec bool
 
 	AddUser, DeleteUser, UpdateUser, ListUsers, EnableUser, DisableUser bool
 	SetSuperuser, UnsetSuperuser                                        bool
@@ -43,6 +44,8 @@ func ParseFlags(args []string, defaultConfigPath string) (*Flags, error) {
 	fs.StringVar(&f.AdminPasswordFile, "admin-password-file", "",
 		"Path to file containing the seed admin password (overrides built-in seed)")
 	fs.BoolVar(&f.Init, "init", false, "One-shot: create data dir, init schema, seed admin")
+	fs.BoolVar(&f.GenerateOpenAPISpec, "generate-openapi-spec", false,
+		"Print the OpenAPI 3.0 specification as JSON to stdout and exit")
 
 	fs.BoolVar(&f.AddUser, "add-user", false, "")
 	fs.BoolVar(&f.DeleteUser, "delete-user", false, "")
