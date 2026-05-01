@@ -8,7 +8,7 @@ import EllieChatPanel from '../index';
 describe('EllieChatPanel', () => {
     it('renders the chat shell', () => {
         renderWithTheme(<EllieChatPanel open={true} onClose={vi.fn()} />);
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /Ellie/i })).toBeInTheDocument();
         expect(screen.getByLabelText(/Message Ellie/)).toBeInTheDocument();
     });
 
