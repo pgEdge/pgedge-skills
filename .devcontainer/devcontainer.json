@@ -9,13 +9,18 @@
 			"installDirectlyFromGitHubRelease": true,
 			"version": "latest"
 		},
-		"ghcr.io/devcontainers-extra/features/claude-code:1": {
-			"version": "latest"
-		},
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "24"
+		},
+		"ghcr.io/devcontainers-extra/features/claude-code:1": {
+			"version": "latest"
 		}
 	},
+	"overrideFeatureInstallOrder": [
+		"ghcr.io/devcontainers/features/github-cli",
+		"ghcr.io/devcontainers/features/node",
+		"ghcr.io/devcontainers-extra/features/claude-code"
+	],
         "mounts": [
             "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind",
             "source=${localEnv:HOME}/.claude/commands,target=/home/vscode/.claude-host/commands,type=bind,readonly",
