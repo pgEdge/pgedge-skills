@@ -295,6 +295,7 @@ func (s *Store) recordFailedLogin(ctx context.Context, username string, prev int
 	return ErrInvalidCredentials
 }
 
+// ErrSessionInvalid indicates a missing, expired, or otherwise unusable session.
 var ErrSessionInvalid = errors.New("session invalid or expired")
 
 // CreateSession generates a 32-byte token and stores its sha256.
