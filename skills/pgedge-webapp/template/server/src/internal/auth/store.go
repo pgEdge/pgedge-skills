@@ -221,3 +221,73 @@ func scanUser(r rowScanner) (*User, error) {
 	}
 	return &u, nil
 }
+
+// LockoutConfig parameterizes VerifyPassword lockout behavior.
+type LockoutConfig struct {
+	MaxFailedAttempts int
+	LockoutDuration   time.Duration
+}
+
+var (
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrAccountLocked      = errors.New("account locked")
+	ErrAccountDisabled    = errors.New("account disabled")
+)
+
+// VerifyPassword checks the credentials and applies the lockout policy.
+func (s *Store) VerifyPassword(ctx context.Context, username, password string, cfg LockoutConfig) (*User, error) {
+	var (
+		passwordHash string
+		enabled      bool
+		failedCount  int
+		lockedUntil  sql.NullTime
+	)
+	err := s.db.QueryRowContext(ctx, `
+		SELECT password_hash, enabled, failed_login_count, locked_until
+		FROM users WHERE username = ?
+	`, username).Scan(&passwordHash, &enabled, &failedCount, &lockedUntil)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrInvalidCredentials
+	}
+	if err != nil {
+		return nil, err
+	}
+	if !enabled {
+		return nil, ErrAccountDisabled
+	}
+	if lockedUntil.Valid && time.Now().Before(lockedUntil.Time) {
+		return nil, ErrAccountLocked
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
+		return nil, s.recordFailedLogin(ctx, username, failedCount, cfg)
+	}
+	if _, err := s.db.ExecContext(ctx, `
+		UPDATE users SET failed_login_count = 0, locked_until = NULL,
+		                 updated_at = CURRENT_TIMESTAMP
+		WHERE username = ?
+	`, username); err != nil {
+		return nil, err
+	}
+	return s.GetUser(ctx, username)
+}
+
+func (s *Store) recordFailedLogin(ctx context.Context, username string, prev int, cfg LockoutConfig) error {
+	next := prev + 1
+	var lockedUntil any
+	if cfg.MaxFailedAttempts > 0 && next >= cfg.MaxFailedAttempts {
+		d := cfg.LockoutDuration
+		if d <= 0 {
+			d = 15 * time.Minute
+		}
+		lockedUntil = time.Now().Add(d)
+	}
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE users SET failed_login_count = ?, locked_until = ?,
+		                 updated_at = CURRENT_TIMESTAMP
+		WHERE username = ?
+	`, next, lockedUntil, username)
+	if err != nil {
+		return err
+	}
+	return ErrInvalidCredentials
+}
