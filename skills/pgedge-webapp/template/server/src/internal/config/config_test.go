@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestDefaultConfig(t *testing.T) {
 	c := defaultConfig()
@@ -19,5 +23,60 @@ func TestDefaultConfig(t *testing.T) {
 	}
 	if c.Auth.SessionLifetimeHours != 24 {
 		t.Errorf("default session lifetime = %d", c.Auth.SessionLifetimeHours)
+	}
+}
+
+func TestLoadConfig_FileMerge(t *testing.T) {
+	tmp := t.TempDir()
+	p := filepath.Join(tmp, "cfg.yaml")
+	body := []byte(`
+http:
+  address: ":9999"
+  hsts_enabled: true
+auth:
+  rate_limit_window_minutes: 30
+data_dir: /var/lib/test
+`)
+	if err := os.WriteFile(p, body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := LoadConfig(p, CLIFlags{ConfigFile: p, ConfigFileSet: true})
+	if err != nil {
+		t.Fatalf("LoadConfig: %v", err)
+	}
+	if cfg.HTTP.Address != ":9999" {
+		t.Errorf("address = %q", cfg.HTTP.Address)
+	}
+	if !cfg.HTTP.HSTSEnabled {
+		t.Error("hsts not merged")
+	}
+	if cfg.Auth.RateLimitWindowMinutes != 30 {
+		t.Errorf("window = %d", cfg.Auth.RateLimitWindowMinutes)
+	}
+	if cfg.Auth.MaxFailedAttemptsBeforeLockout != 10 {
+		t.Error("default lockout overwritten by zero merge")
+	}
+	if cfg.DataDir != "/var/lib/test" {
+		t.Errorf("data dir = %q", cfg.DataDir)
+	}
+}
+
+func TestLoadConfig_MissingExplicitFile(t *testing.T) {
+	_, err := LoadConfig("/no/such/file.yaml", CLIFlags{
+		ConfigFile: "/no/such/file.yaml", ConfigFileSet: true,
+	})
+	if err == nil {
+		t.Fatal("expected error when explicit --config is missing")
+	}
+}
+
+func TestLoadConfig_SilentDefaultsWhenNoFile(t *testing.T) {
+	cfg, err := LoadConfig("/no/such/file.yaml", CLIFlags{})
+	if err != nil {
+		t.Fatalf("expected silent defaults, got %v", err)
+	}
+	if cfg.HTTP.Address != ":<HTTP_PORT>" {
+		t.Errorf("default lost")
 	}
 }

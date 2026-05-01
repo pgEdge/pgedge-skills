@@ -3,6 +3,13 @@
 // variable reads in this package by design.
 package config
 
+import (
+	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v3"
+)
+
 // Config is the top-level server configuration.
 type Config struct {
 	HTTP    HTTPConfig `yaml:"http"`
@@ -69,5 +76,91 @@ func defaultConfig() *Config {
 			RateLimitMaxAttempts:           10,
 			SessionLifetimeHours:           24,
 		},
+	}
+}
+
+// LoadConfig builds a Config by:
+//  1. starting with defaults,
+//  2. merging the file at configPath if present (or erroring if --config was
+//     explicit and the file is missing/invalid),
+//  3. applying CLI overrides,
+//  4. validating.
+func LoadConfig(configPath string, flags CLIFlags) (*Config, error) {
+	cfg := defaultConfig()
+
+	if configPath != "" {
+		fileCfg, err := loadConfigFile(configPath)
+		switch {
+		case err == nil:
+			mergeConfig(cfg, fileCfg)
+		case flags.ConfigFileSet:
+			return nil, fmt.Errorf("loading config %s: %w", configPath, err)
+		default:
+			// Default-path file missing/invalid: silently use defaults.
+		}
+	}
+
+	applyCLIFlags(cfg, flags)
+
+	if err := validateConfig(cfg); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
+	}
+	return cfg, nil
+}
+
+func loadConfigFile(path string) (*Config, error) {
+	data, err := os.ReadFile(path) // #nosec G304 - administrator-supplied path
+	if err != nil {
+		return nil, err
+	}
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("parsing yaml: %w", err)
+	}
+	return &cfg, nil
+}
+
+// mergeConfig copies non-zero fields from src into dest. Boolean fields are
+// only copied when they are true so a config file that omits hsts_enabled
+// does not flip an existing true to false.
+func mergeConfig(dest, src *Config) {
+	if src.HTTP.Address != "" {
+		dest.HTTP.Address = src.HTTP.Address
+	}
+	if src.HTTP.TLS.Enabled {
+		dest.HTTP.TLS.Enabled = true
+	}
+	if src.HTTP.TLS.CertFile != "" {
+		dest.HTTP.TLS.CertFile = src.HTTP.TLS.CertFile
+	}
+	if src.HTTP.TLS.KeyFile != "" {
+		dest.HTTP.TLS.KeyFile = src.HTTP.TLS.KeyFile
+	}
+	if src.HTTP.TLS.ChainFile != "" {
+		dest.HTTP.TLS.ChainFile = src.HTTP.TLS.ChainFile
+	}
+	if len(src.HTTP.TrustedProxies) > 0 {
+		dest.HTTP.TrustedProxies = src.HTTP.TrustedProxies
+	}
+	if src.HTTP.CORSOrigin != "" {
+		dest.HTTP.CORSOrigin = src.HTTP.CORSOrigin
+	}
+	if src.HTTP.HSTSEnabled {
+		dest.HTTP.HSTSEnabled = true
+	}
+	if src.Auth.MaxFailedAttemptsBeforeLockout > 0 {
+		dest.Auth.MaxFailedAttemptsBeforeLockout = src.Auth.MaxFailedAttemptsBeforeLockout
+	}
+	if src.Auth.RateLimitWindowMinutes > 0 {
+		dest.Auth.RateLimitWindowMinutes = src.Auth.RateLimitWindowMinutes
+	}
+	if src.Auth.RateLimitMaxAttempts > 0 {
+		dest.Auth.RateLimitMaxAttempts = src.Auth.RateLimitMaxAttempts
+	}
+	if src.Auth.SessionLifetimeHours > 0 {
+		dest.Auth.SessionLifetimeHours = src.Auth.SessionLifetimeHours
+	}
+	if src.DataDir != "" {
+		dest.DataDir = src.DataDir
 	}
 }
