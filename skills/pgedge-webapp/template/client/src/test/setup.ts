@@ -98,26 +98,3 @@ const sessionStorageMock = {
 };
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
-/*
- * Replace the project-shared `SlideTransition` with a synchronous
- * passthrough in every test. Several dialogs (ServerDialog,
- * ServerInfoDialog, GroupDialog, ClusterConfigDialog, AdminPanel, and
- * the analysis dialogs) pass `TransitionComponent={SlideTransition}`
- * explicitly on their `<Dialog>` element; that prop overrides the
- * default `TransitionComponent` that `renderWithTheme` installs on the
- * theme, so MUI's `Slide` still mounts a real `react-transition-group`
- * `Transition` and schedules `setTimeout` callbacks that fire outside
- * React's `act()` boundary, emitting `not wrapped in act(...)` warnings.
- *
- * Mocking `SlideTransition` at the module level bypasses the Slide
- * entirely and keeps the enter/exit lifecycle inside the current commit,
- * so every dialog test inherits the same act-safe behaviour without
- * needing per-file `vi.mock` calls. Any test that genuinely needs the
- * real slide behaviour can opt back in with
- * `vi.unmock('./components/shared/SlideTransition')`.
- */
-vi.mock('../components/shared/SlideTransition', async () => {
-    const mod = await import('./ImmediateTransition');
-    return { default: mod.default };
-});
-
