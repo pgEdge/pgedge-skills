@@ -1,0 +1,38 @@
+name: Test pgedge-webapp Skill
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - 'skills/pgedge-webapp/**'
+            - '.github/workflows/test-pgedge-webapp.yml'
+    pull_request:
+        branches: [main]
+        paths:
+            - 'skills/pgedge-webapp/**'
+            - '.github/workflows/test-pgedge-webapp.yml'
+
+jobs:
+    scaffold:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '1.23'
+
+            - name: Set up Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '24'
+
+            - name: Set up Helm
+              uses: azure/setup-helm@v4
+              with:
+                  version: 'v3.15.0'
+
+            - name: Run scaffolding harness
+              run: bash skills/pgedge-webapp/tools/test-scaffold.sh
