@@ -14,10 +14,10 @@ func TestRequired_AllowsValidCookie(t *testing.T) {
 	_ = s.CreateUser(ctx, CreateUserParams{Username: "u", Password: "Hunter2HunterTwo!"})
 	tok, _ := s.CreateSession(ctx, "u", time.Hour)
 
-	mw := NewMiddleware(s, "<COOKIE_NAME>")
+	mw := NewMiddleware(s, "test_session")
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
-	req.AddCookie(&http.Cookie{Name: "<COOKIE_NAME>", Value: tok})
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
 
 	handler := mw.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		u, _ := UserFromContext(r.Context())
@@ -34,7 +34,7 @@ func TestRequired_AllowsValidCookie(t *testing.T) {
 
 func TestRequired_RejectsMissingCookie(t *testing.T) {
 	s := newTestStore(t)
-	mw := NewMiddleware(s, "<COOKIE_NAME>")
+	mw := NewMiddleware(s, "test_session")
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest("GET", "/", nil)
 	mw.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})).ServeHTTP(rec, req)
