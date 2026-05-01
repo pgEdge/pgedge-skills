@@ -5,10 +5,10 @@ import { axe } from '../../test/axe';
 import App from '../../App';
 
 describe('App a11y sweep', () => {
-    beforeEach(() => { global.fetch = vi.fn() as unknown as typeof fetch; });
+    beforeEach(() => { globalThis.fetch = vi.fn() as unknown as typeof fetch; });
 
     it('login state has no a11y violations', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: false, json: () => Promise.resolve({ authenticated: false }),
         });
         const { container } = renderWithTheme(<App />);
@@ -17,7 +17,7 @@ describe('App a11y sweep', () => {
     });
 
     it('authenticated state has no a11y violations', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true, json: () => Promise.resolve({ authenticated: true, username: 'tester' }),
         });
         const { container } = renderWithTheme(<App />);

@@ -7,7 +7,7 @@ import Header from '../Header';
 import { AuthProvider } from '../../contexts/AuthContext';
 
 const renderHeader = (props: Partial<{ onToggleTheme: () => void }> = {}) => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+    (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: true, json: () => Promise.resolve({ authenticated: true, username: 'tester' }),
     });
     return renderWithTheme(
@@ -16,7 +16,7 @@ const renderHeader = (props: Partial<{ onToggleTheme: () => void }> = {}) => {
 };
 
 describe('Header', () => {
-    beforeEach(() => { global.fetch = vi.fn() as unknown as typeof fetch; });
+    beforeEach(() => { globalThis.fetch = vi.fn() as unknown as typeof fetch; });
 
     it('shows the project name', async () => {
         renderHeader();

@@ -9,11 +9,11 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('AuthContext', () => {
     beforeEach(() => {
-        global.fetch = vi.fn() as unknown as typeof fetch;
+        globalThis.fetch = vi.fn() as unknown as typeof fetch;
     });
 
     it('starts unauthenticated when /user/info returns 401', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: false, status: 401, json: () => Promise.resolve({ authenticated: false }),
         });
         const { result } = renderHook(() => useAuth(), { wrapper });
@@ -22,7 +22,7 @@ describe('AuthContext', () => {
     });
 
     it('sets user after successful login', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({ authenticated: false }) })
             .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ success: true, expires_at: '2099-01-01T00:00:00Z' }) })
             .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ authenticated: true, username: 'alice', is_superuser: true }) });
@@ -36,7 +36,7 @@ describe('AuthContext', () => {
     });
 
     it('clears user on logout', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ authenticated: true, username: 'u' }) })
             .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ success: true }) });
 

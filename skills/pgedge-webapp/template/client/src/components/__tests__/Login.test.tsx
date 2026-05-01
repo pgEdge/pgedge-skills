@@ -10,8 +10,8 @@ const renderLogin = () => renderWithTheme(<AuthProvider><Login /></AuthProvider>
 
 describe('Login', () => {
     beforeEach(() => {
-        global.fetch = vi.fn() as unknown as typeof fetch;
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        globalThis.fetch = vi.fn() as unknown as typeof fetch;
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: false, status: 401, json: () => Promise.resolve({ authenticated: false }),
         });
     });
@@ -33,7 +33,7 @@ describe('Login', () => {
 
     it('shows an error on bad credentials', async () => {
         const user = userEvent.setup();
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({ authenticated: false }) })
             .mockResolvedValueOnce({ ok: false, status: 401, json: () => Promise.resolve({ message: 'invalid' }) });
 
