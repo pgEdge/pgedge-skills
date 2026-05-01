@@ -145,3 +145,44 @@ func TestVerify_DisabledRejected(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestSessions(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "alice", Password: "Hunter2HunterTwo!"})
+
+	token, err := s.CreateSession(ctx, "alice", time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if token == "" {
+		t.Fatal("empty token")
+	}
+	u, err := s.ValidateSession(ctx, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Username != "alice" {
+		t.Errorf("got = %+v", u)
+	}
+	if err := s.DeleteSession(ctx, token); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.ValidateSession(ctx, token); !errors.Is(err, ErrSessionInvalid) {
+		t.Errorf("err = %v", err)
+	}
+}
+
+func TestSessions_Expired(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "x", Password: "Hunter2HunterTwo!"})
+	tok, _ := s.CreateSession(ctx, "x", -time.Hour)
+	if _, err := s.ValidateSession(ctx, tok); !errors.Is(err, ErrSessionInvalid) {
+		t.Errorf("err = %v", err)
+	}
+	n, err := s.DeleteExpiredSessions(ctx)
+	if err != nil || n != 1 {
+		t.Errorf("delete expired: n=%d err=%v", n, err)
+	}
+}

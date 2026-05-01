@@ -4,7 +4,10 @@ package auth
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -290,4 +293,77 @@ func (s *Store) recordFailedLogin(ctx context.Context, username string, prev int
 		return err
 	}
 	return ErrInvalidCredentials
+}
+
+var ErrSessionInvalid = errors.New("session invalid or expired")
+
+// CreateSession generates a 32-byte token and stores its sha256.
+func (s *Store) CreateSession(ctx context.Context, username string, lifetime time.Duration) (string, error) {
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		return "", err
+	}
+	token := hex.EncodeToString(raw)
+	expires := time.Now().Add(lifetime)
+	if _, err := s.db.ExecContext(ctx,
+		`INSERT INTO sessions (token_hash, username, expires_at) VALUES (?, ?, ?)`,
+		sha256Hex(token), username, expires); err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+// ValidateSession returns the user behind a session token; refreshes
+// last_seen_at on hit.
+func (s *Store) ValidateSession(ctx context.Context, token string) (*User, error) {
+	if token == "" {
+		return nil, ErrSessionInvalid
+	}
+	h := sha256Hex(token)
+	var (
+		username  string
+		expiresAt time.Time
+	)
+	err := s.db.QueryRowContext(ctx,
+		`SELECT username, expires_at FROM sessions WHERE token_hash = ?`,
+		h).Scan(&username, &expiresAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrSessionInvalid
+	}
+	if err != nil {
+		return nil, err
+	}
+	if time.Now().After(expiresAt) {
+		return nil, ErrSessionInvalid
+	}
+	u, err := s.GetUser(ctx, username)
+	if err != nil || !u.Enabled {
+		return nil, ErrSessionInvalid
+	}
+	_, _ = s.db.ExecContext(ctx,
+		`UPDATE sessions SET last_seen_at = CURRENT_TIMESTAMP WHERE token_hash = ?`, h)
+	return u, nil
+}
+
+// DeleteSession removes one session.
+func (s *Store) DeleteSession(ctx context.Context, token string) error {
+	_, err := s.db.ExecContext(ctx,
+		`DELETE FROM sessions WHERE token_hash = ?`, sha256Hex(token))
+	return err
+}
+
+// DeleteExpiredSessions removes expired rows; returns count.
+func (s *Store) DeleteExpiredSessions(ctx context.Context) (int, error) {
+	res, err := s.db.ExecContext(ctx,
+		`DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP`)
+	if err != nil {
+		return 0, err
+	}
+	n, _ := res.RowsAffected()
+	return int(n), nil
+}
+
+func sha256Hex(s string) string {
+	sum := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(sum[:])
 }
