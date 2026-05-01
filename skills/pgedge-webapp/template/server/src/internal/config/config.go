@@ -164,3 +164,36 @@ func mergeConfig(dest, src *Config) {
 		dest.DataDir = src.DataDir
 	}
 }
+
+func applyCLIFlags(cfg *Config, f CLIFlags) {
+	if f.HTTPAddrSet {
+		cfg.HTTP.Address = f.HTTPAddr
+	}
+	if f.TLSEnabledSet {
+		cfg.HTTP.TLS.Enabled = f.TLSEnabled
+	}
+	if f.TLSCertSet {
+		cfg.HTTP.TLS.CertFile = f.TLSCertFile
+	}
+	if f.TLSKeySet {
+		cfg.HTTP.TLS.KeyFile = f.TLSKeyFile
+	}
+	if f.TLSChainSet {
+		cfg.HTTP.TLS.ChainFile = f.TLSChainFile
+	}
+	if f.DataDirSet {
+		cfg.DataDir = f.DataDir
+	}
+}
+
+func validateConfig(cfg *Config) error {
+	if cfg.HTTP.TLS.Enabled {
+		if cfg.HTTP.TLS.CertFile == "" {
+			return fmt.Errorf("tls cert file is required when tls.enabled is true")
+		}
+		if cfg.HTTP.TLS.KeyFile == "" {
+			return fmt.Errorf("tls key file is required when tls.enabled is true")
+		}
+	}
+	return nil
+}

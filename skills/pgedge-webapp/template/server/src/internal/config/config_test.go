@@ -80,3 +80,41 @@ func TestLoadConfig_SilentDefaultsWhenNoFile(t *testing.T) {
 		t.Errorf("default lost")
 	}
 }
+
+func TestApplyCLIFlags(t *testing.T) {
+	cfg := defaultConfig()
+	applyCLIFlags(cfg, CLIFlags{
+		HTTPAddrSet:   true,
+		HTTPAddr:      ":7777",
+		TLSEnabledSet: true,
+		TLSEnabled:    true,
+		TLSCertSet:    true,
+		TLSCertFile:   "/tmp/c.pem",
+		TLSKeySet:     true,
+		TLSKeyFile:    "/tmp/k.pem",
+		DataDirSet:    true,
+		DataDir:       "/tmp/data",
+	})
+	if cfg.HTTP.Address != ":7777" {
+		t.Errorf("address = %q", cfg.HTTP.Address)
+	}
+	if !cfg.HTTP.TLS.Enabled || cfg.HTTP.TLS.CertFile != "/tmp/c.pem" {
+		t.Errorf("tls = %+v", cfg.HTTP.TLS)
+	}
+	if cfg.DataDir != "/tmp/data" {
+		t.Errorf("data dir = %q", cfg.DataDir)
+	}
+}
+
+func TestValidate_TLSRequiresCertAndKey(t *testing.T) {
+	cfg := defaultConfig()
+	cfg.HTTP.TLS.Enabled = true
+	if err := validateConfig(cfg); err == nil {
+		t.Fatal("missing cert/key should fail")
+	}
+	cfg.HTTP.TLS.CertFile = "/c"
+	cfg.HTTP.TLS.KeyFile = "/k"
+	if err := validateConfig(cfg); err != nil {
+		t.Fatalf("valid TLS rejected: %v", err)
+	}
+}
