@@ -47,7 +47,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, ErrAccountDisabled):
 			writeJSON(w, http.StatusForbidden, loginResponse{Message: "account disabled"})
 		default:
-			writeJSON(w, http.StatusUnauthorized, loginResponse{Message: "invalid credentials"})
+			writeJSON(w, http.StatusUnauthorized, loginResponse{Message: "Incorrect username or password"})
 		}
 		return
 	}
