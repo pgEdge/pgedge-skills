@@ -11,6 +11,9 @@
 		},
 		"ghcr.io/devcontainers-extra/features/claude-code:1": {
 			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "24"
 		}
 	},
         "mounts": [
@@ -23,7 +26,7 @@
             "GH_TOKEN": "${localEnv:GH_TOKEN}",
             "DISABLE_AUTOUPDATER": "1"
         },
-        "postCreateCommand": "mkdir -p ~/.claude && ln -sf ~/.claude-host/commands ~/.claude/commands && ln -sf ~/.claude-host/settings.json ~/.claude/settings.json && echo 'alias claude=\"claude --dangerously-skip-permissions\"' >> ~/.bashrc"
+        "postCreateCommand": "mkdir -p ~/.claude && ln -sf ~/.claude-host/commands ~/.claude/commands && ln -sf ~/.claude-host/settings.json ~/.claude/settings.json && echo 'alias claude=\"claude --dangerously-skip-permissions\"' >> ~/.bashrc && curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o /tmp/get-helm-3.sh && bash /tmp/get-helm-3.sh && rm /tmp/get-helm-3.sh"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
