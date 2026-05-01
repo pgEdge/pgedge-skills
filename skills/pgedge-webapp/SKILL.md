@@ -151,6 +151,16 @@ No comments restating what code does. Comments earn their place by
 explaining a non-obvious why: a workaround, an invariant, a load-bearing
 constraint.
 
+### Devcontainer
+
+Scaffolded projects ship with `.devcontainer/devcontainer.json` plus
+`post-create.sh`, mirroring the `pgedge-skills` repo's own pattern. The
+container provisions Go 1.23 and Node 24, installs Helm via
+`post-create.sh`, runs `go mod download` and `npm ci` so the dev loop
+starts hot, and forwards the templated HTTP port. The
+`overrideFeatureInstallOrder` block is load-bearing — it ensures Node
+lands on `PATH` before later steps. Do not remove or reorder it.
+
 ## Accessibility Requirements
 
 WCAG 2.1 AA at minimum. Tests assert zero AA violations via vitest-axe.

@@ -24,6 +24,8 @@ separately.
 - Directory `server/src/cmd/<binary>/` — rename to the actual binary.
 - Filename `examples/<binary>.yaml` — rename to the actual binary.
 - Directory `deploy/helm/<binary>/` — rename to the actual binary.
+- Directory `.devcontainer/` — verbatim; only content placeholders inside
+  (`<PROJECT_NAME>`, `<HTTP_PORT>`) are substituted.
 
 The harness `tools/test-scaffold.sh` is the canonical reference for the
 substitution logic. Any change to placeholder names must be applied to
