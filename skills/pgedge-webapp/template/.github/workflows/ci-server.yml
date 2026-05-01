@@ -1,0 +1,44 @@
+name: CI - Server
+
+on:
+    push:
+        branches: [main]
+        paths: ['server/**', '.github/workflows/ci-server.yml']
+    pull_request:
+        branches: [main]
+        paths: ['server/**', '.github/workflows/ci-server.yml']
+
+jobs:
+    server:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                go-version: ['1.23', '1.24']
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ matrix.go-version }}
+            - run: go mod verify
+              working-directory: server/src
+            - run: go vet ./...
+              working-directory: server/src
+              if: matrix.go-version == '1.24'
+            - name: Check gofmt
+              if: matrix.go-version == '1.24'
+              working-directory: server/src
+              run: |
+                  out=$(gofmt -l .)
+                  if [ -n "$out" ]; then
+                      echo "Unformatted: $out"; exit 1
+                  fi
+            - uses: golangci/golangci-lint-action@v6
+              if: matrix.go-version == '1.24'
+              with:
+                  version: v2.1.6
+                  working-directory: server
+            - run: make build
+              working-directory: server
+            - run: make coverage-check
+              working-directory: server
