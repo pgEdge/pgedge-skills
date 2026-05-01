@@ -512,3 +512,70 @@ When reviewing documentation, verify:
 - [ ] Default values and valid ranges match the code
 - [ ] Behavioral descriptions match the actual implementation
 - [ ] Sub-agent verification against source code completed
+
+## In-App Help Panel Content (Online Help)
+
+### When This Section Applies
+
+These rules apply when authoring help content rendered inside an
+application's help panel. The section activates when the user mentions
+"in-app help", "online help", "help panel", "help content", or "help
+pages", or when the working project contains
+`client/src/components/HelpPanel/pages/` (an artifact of the
+`pgedge-webapp` skill).
+
+### File Locations and Layout
+
+Each help page is one Markdown file under
+`client/src/components/HelpPanel/pages/` paired with a thin React
+wrapper that imports the Markdown and feeds it to a shared renderer.
+The Markdown filename is kebab-case matching the page's route key.
+Register every page in `pages/index.ts` with
+`{ key, title, component }`. When adding a page, add the markdown,
+the wrapper, and the registry entry in a single change.
+
+### Page Structure
+
+In-app help follows the same writing rules as user-facing docs (one
+`#` heading, intro paragraph after every heading, lead-in colons before
+lists, product names as proper nouns, line wrap at 79), with three
+differences appropriate to the in-app context:
+
+- No "Next Steps" section. The Help panel is a side drawer; users
+  return to the application, not to another doc page.
+- No external links to docs.pgedge.com from in-app pages — instead,
+  link to other help pages via `[label](page:<key>)`. The renderer
+  rewrites these links to navigate within the panel.
+- Pages should stay short. Anything over ~400 words is a candidate to
+  split or to relocate to docs.pgedge.com.
+
+### React-Markdown Rendering Constraints
+
+The Help panel uses `react-markdown` plus `remark-gfm`. This means:
+
+- Standard CommonMark plus GFM tables, task lists, and strikethrough
+  are supported.
+- Admonitions are not supported. Wrap content in MUI
+  `<Alert severity="info">` inside the wrapper, not in Markdown.
+- Custom HTML in Markdown is sanitized; inline `<style>` and
+  `<script>` will not render.
+- Code fences with language tags work via
+  `react-syntax-highlighter`.
+
+### Linking Between Pages
+
+Use `[label](page:<key>)` for in-panel links. Do not use
+`https://docs.pgedge.com/...` from in-app help; if depth is needed,
+summarize and link with `target="_blank" rel="noopener"`.
+
+### Images and Assets
+
+Images live alongside the markdown in
+`client/src/components/HelpPanel/pages/img/<page-key>/` and are bundled
+by Vite. Provide alt text on every image.
+
+### Verifying In-App Help Content
+
+The verification rule from the user-facing-docs section also applies to
+in-app help. After authoring or editing any page, launch a sub-agent
+that confirms documented behavior matches the actual code.
