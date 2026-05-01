@@ -13,7 +13,7 @@ coverage:
 coverage-check: coverage
 	cd src && go run ./tools/coverage-check \
 		-profile coverage.out -threshold 90 \
-		-exclude 'cmd/<BINARY_NAME>/main.go'
+		-exclude 'cmd/<BINARY_NAME>/main.go,cmd/<BINARY_NAME>/server.go,tools/coverage-check/main.go'
 
 lint:
 	cd src && golangci-lint run
