@@ -16,14 +16,6 @@ function makeOkResponse(json: unknown): Response {
     } as unknown as Response;
 }
 
-function makeErrResponse(status: number, body = ''): Response {
-    return {
-        ok: false,
-        status,
-        json: () => Promise.reject(new SyntaxError('not json')),
-        text: () => Promise.resolve(body),
-    } as unknown as Response;
-}
 
 describe('AuthContext', () => {
     beforeEach(() => {

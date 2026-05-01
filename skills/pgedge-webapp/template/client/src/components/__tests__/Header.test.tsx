@@ -5,7 +5,6 @@ import { renderWithTheme } from '../../test/renderWithTheme';
 import { axe } from '../../test/axe';
 import Header from '../Header';
 import { AuthProvider } from '../../contexts/AuthContext';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 function makeOkResponse(json: unknown): Response {
     return {
