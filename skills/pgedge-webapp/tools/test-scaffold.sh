@@ -107,11 +107,20 @@ PYEOF
 # Build + test the scaffolded client
 (
     cd "$TARGET/client"
-    npm ci
+    npm install
     npm run typecheck
     npm run lint
     npm run test:coverage
 )
+
+# Validate devcontainer.json (JSON-with-comments) parses after substitution.
+python3 -c "
+import json, re, pathlib
+text = pathlib.Path('$TARGET/.devcontainer/devcontainer.json').read_text()
+text = re.sub(r'//[^\n]*', '', text)
+json.loads(text)
+print('devcontainer.json: OK')
+"
 
 # Helm lint (skipped if helm not installed; non-fatal)
 if command -v helm >/dev/null 2>&1; then
