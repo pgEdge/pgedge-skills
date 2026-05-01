@@ -8,7 +8,7 @@
  *-------------------------------------------------------------------------
  */
 
-import type { SxProps } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
 import type { Theme } from '@mui/material/styles';
 
 /**
@@ -22,7 +22,7 @@ import type { Theme } from '@mui/material/styles';
  */
 export const getSelectFieldSx = (
     bgcolor = 'background.paper',
-): SxProps<Theme> => ({
+): SystemStyleObject<Theme> => ({
     '& .MuiOutlinedInput-notchedOutline legend': {
         width: 0,
     },
