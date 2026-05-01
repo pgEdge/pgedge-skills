@@ -1,0 +1,7 @@
+.git/
+.gitignore
+.idea/
+*.swp
+*.tmp
+*.bak
+.DS_Store
