@@ -186,3 +186,107 @@ func TestSessions_Expired(t *testing.T) {
 		t.Errorf("delete expired: n=%d err=%v", n, err)
 	}
 }
+
+func TestStore_CreateUserWithHash(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	// Use any syntactically valid bcrypt hash string; we only test DB storage,
+	// not bcrypt verification here.
+	hash := "$2a$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345"
+	if err := s.CreateUserWithHash(ctx, "hashuser", hash, true); err != nil {
+		t.Fatalf("CreateUserWithHash: %v", err)
+	}
+	// Verify the user is in the DB by counting.
+	n, err := s.CountUsers(ctx)
+	if err != nil {
+		t.Fatalf("CountUsers: %v", err)
+	}
+	if n != 1 {
+		t.Errorf("count = %d, want 1", n)
+	}
+	// Duplicate should fail.
+	if err := s.CreateUserWithHash(ctx, "hashuser", hash, false); err == nil {
+		t.Error("duplicate should be rejected")
+	}
+}
+
+func TestStore_UpdateProfile(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "p", Password: "Hunter2HunterTwo!"})
+	if err := s.UpdateProfile(ctx, "p", "Full Name", "p@example.com"); err != nil {
+		t.Fatalf("UpdateProfile: %v", err)
+	}
+	u, _ := s.GetUser(ctx, "p")
+	if u.FullName != "Full Name" || u.Email != "p@example.com" {
+		t.Errorf("u = %+v", u)
+	}
+	// Non-existent user should return ErrUserNotFound
+	if err := s.UpdateProfile(ctx, "nobody", "x", "x"); !errors.Is(err, ErrUserNotFound) {
+		t.Errorf("err = %v", err)
+	}
+}
+
+func TestStore_UpdatePassword(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "pw", Password: "Hunter2HunterTwo!"})
+	if err := s.UpdatePassword(ctx, "pw", "NewPass99!"); err != nil {
+		t.Fatalf("UpdatePassword: %v", err)
+	}
+	// New password should work
+	u, err := s.VerifyPassword(ctx, "pw", "NewPass99!", LockoutConfig{MaxFailedAttempts: 5})
+	if err != nil || u.Username != "pw" {
+		t.Errorf("verify after update: u=%+v err=%v", u, err)
+	}
+	// Old password should fail
+	_, err = s.VerifyPassword(ctx, "pw", "Hunter2HunterTwo!", LockoutConfig{MaxFailedAttempts: 5})
+	if !errors.Is(err, ErrInvalidCredentials) {
+		t.Errorf("old password err = %v", err)
+	}
+}
+
+func TestStore_SetSuperuser(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "su", Password: "Hunter2HunterTwo!"})
+	if err := s.SetSuperuser(ctx, "su", true); err != nil {
+		t.Fatalf("SetSuperuser: %v", err)
+	}
+	u, _ := s.GetUser(ctx, "su")
+	if !u.IsSuperuser {
+		t.Error("expected superuser")
+	}
+	if err := s.SetSuperuser(ctx, "su", false); err != nil {
+		t.Fatal(err)
+	}
+	u, _ = s.GetUser(ctx, "su")
+	if u.IsSuperuser {
+		t.Error("expected non-superuser")
+	}
+}
+
+func TestStore_DeleteUser_NotFound(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	if err := s.DeleteUser(ctx, "nobody"); !errors.Is(err, ErrUserNotFound) {
+		t.Errorf("err = %v", err)
+	}
+}
+
+func TestValidateSession_Empty(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	if _, err := s.ValidateSession(ctx, ""); !errors.Is(err, ErrSessionInvalid) {
+		t.Errorf("err = %v", err)
+	}
+}
+
+func TestVerify_UnknownUser(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_, err := s.VerifyPassword(ctx, "nobody", "pass", LockoutConfig{MaxFailedAttempts: 3})
+	if !errors.Is(err, ErrInvalidCredentials) {
+		t.Errorf("err = %v", err)
+	}
+}

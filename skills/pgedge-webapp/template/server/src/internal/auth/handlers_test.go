@@ -98,3 +98,79 @@ func TestUserInfo_Authenticated(t *testing.T) {
 		t.Errorf("body = %+v", out)
 	}
 }
+
+func TestUserInfo_NotAuthenticated(t *testing.T) {
+	h, _ := newTestHandlers(t)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/api/v1/user/info", nil)
+	// Call UserInfo directly without middleware — no user in context.
+	h.UserInfo(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Errorf("code = %d", rec.Code)
+	}
+	var out map[string]any
+	_ = json.Unmarshal(rec.Body.Bytes(), &out)
+	if out["authenticated"] != false {
+		t.Errorf("body = %+v", out)
+	}
+}
+
+func TestLogin_MalformedJSON(t *testing.T) {
+	h, _ := newTestHandlers(t)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v1/auth/login", strings.NewReader("{bad"))
+	req.Header.Set("Content-Type", "application/json")
+	h.Login(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("code = %d", rec.Code)
+	}
+}
+
+func TestLogin_AccountLocked(t *testing.T) {
+	h, s := newTestHandlers(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "locked", Password: "Hunter2HunterTwo!"})
+	// Exhaust the lockout limit (5 failures configured in newTestHandlers)
+	for i := 0; i < 5; i++ {
+		body := strings.NewReader(`{"username":"locked","password":"wrong"}`)
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest("POST", "/api/v1/auth/login", body)
+		req.Header.Set("Content-Type", "application/json")
+		h.Login(rec, req)
+	}
+	// Now the account should be locked
+	body := strings.NewReader(`{"username":"locked","password":"Hunter2HunterTwo!"}`)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v1/auth/login", body)
+	req.Header.Set("Content-Type", "application/json")
+	h.Login(rec, req)
+	if rec.Code != http.StatusTooManyRequests {
+		t.Errorf("code = %d", rec.Code)
+	}
+}
+
+func TestLogin_AccountDisabled(t *testing.T) {
+	h, s := newTestHandlers(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "disabled", Password: "Hunter2HunterTwo!"})
+	_ = s.SetEnabled(ctx, "disabled", false)
+	body := strings.NewReader(`{"username":"disabled","password":"Hunter2HunterTwo!"}`)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v1/auth/login", body)
+	req.Header.Set("Content-Type", "application/json")
+	h.Login(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Errorf("code = %d", rec.Code)
+	}
+}
+
+func TestLogout_NoCookie(t *testing.T) {
+	h, _ := newTestHandlers(t)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/v1/auth/logout", nil)
+	// No cookie set
+	h.Logout(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Errorf("code = %d", rec.Code)
+	}
+}

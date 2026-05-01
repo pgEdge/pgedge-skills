@@ -42,3 +42,42 @@ func TestRequired_RejectsMissingCookie(t *testing.T) {
 		t.Errorf("code = %d", rec.Code)
 	}
 }
+
+func TestOptional_PassesThroughWithNoUser(t *testing.T) {
+	s := newTestStore(t)
+	mw := NewMiddleware(s, "test_session")
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	called := false
+	mw.Optional(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		_, ok := UserFromContext(r.Context())
+		if ok {
+			t.Error("no user expected in context")
+		}
+		w.WriteHeader(http.StatusOK)
+	})).ServeHTTP(rec, req)
+	if !called {
+		t.Error("handler not called")
+	}
+}
+
+func TestOptional_AttachesUserWhenValid(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "opt", Password: "Hunter2HunterTwo!"})
+	tok, _ := s.CreateSession(ctx, "opt", time.Hour)
+
+	mw := NewMiddleware(s, "test_session")
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+
+	mw.Optional(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		u, ok := UserFromContext(r.Context())
+		if !ok || u.Username != "opt" {
+			t.Errorf("expected opt user, got ok=%v u=%+v", ok, u)
+		}
+		w.WriteHeader(http.StatusOK)
+	})).ServeHTTP(rec, req)
+}
