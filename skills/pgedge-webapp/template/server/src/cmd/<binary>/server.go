@@ -114,7 +114,7 @@ func seedAdminIfEmpty(ctx context.Context, store *auth.Store, flags *Flags, log 
 		return err
 	}
 	log.Warn("seeded_admin", "username", SeededAdminUsername,
-		"msg", "rotate this password after first login")
+		"note", "rotate this password after first login")
 	return nil
 }
 
