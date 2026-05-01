@@ -21,6 +21,29 @@ describe('EllieChatPanel', () => {
         expect(screen.getByText('hello')).toBeInTheDocument();
     });
 
+    it('does not send when input is empty or whitespace', async () => {
+        const user = userEvent.setup();
+        renderWithTheme(<EllieChatPanel open={true} onClose={vi.fn()} />);
+        // Send button should be disabled when input is empty
+        const sendBtn = screen.getByLabelText('send message');
+        expect(sendBtn).toBeDisabled();
+
+        // Type only whitespace - button should still be disabled
+        const input = screen.getByLabelText(/Message Ellie/);
+        await user.type(input, '   ');
+        expect(sendBtn).toBeDisabled();
+    });
+
+    it('clears input after sending', async () => {
+        const user = userEvent.setup();
+        renderWithTheme(<EllieChatPanel open={true} onClose={vi.fn()} />);
+        const input = screen.getByLabelText(/Message Ellie/);
+        await user.type(input, 'test message');
+        await user.click(screen.getByLabelText('send message'));
+        // Input should be cleared after send
+        expect(input).toHaveValue('');
+    });
+
     it('has no a11y violations', async () => {
         const { container } = renderWithTheme(<EllieChatPanel open={true} onClose={vi.fn()} />);
         expect(await axe(container)).toHaveNoViolations();
