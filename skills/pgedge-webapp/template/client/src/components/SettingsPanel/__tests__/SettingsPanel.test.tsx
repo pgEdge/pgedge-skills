@@ -1,15 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithTheme } from '../../../test/renderWithTheme';
 import { axe } from '../../../test/axe';
 import SettingsPanel from '../index';
 
 describe('SettingsPanel', () => {
-    it('renders title and tab', () => {
+    it('renders the title and the General nav item', () => {
         renderWithTheme(<SettingsPanel open={true} onClose={vi.fn()} />);
         expect(screen.getByRole('dialog', { name: /settings/i })).toBeInTheDocument();
-        expect(screen.getByRole('tab', { name: /general/i })).toBeInTheDocument();
+        expect(screen.getByRole('navigation', { name: 'settings sections' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /general/i })).toBeInTheDocument();
     });
 
     it('calls onClose when close button is clicked', async () => {
@@ -20,19 +21,18 @@ describe('SettingsPanel', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
-    it('tab onChange executes when a tab button is clicked', () => {
+    it('selects the first item on open and renders its content', () => {
         renderWithTheme(<SettingsPanel open={true} onClose={vi.fn()} />);
-        const tabEl = screen.getByRole('tab', { name: /general/i });
-        // Use mousedown + click to simulate MUI tab selection which fires onChange
-        fireEvent.mouseDown(tabEl);
-        fireEvent.click(tabEl);
-        // Tab should still be rendered with no crash from the onChange handler
-        expect(tabEl).toBeInTheDocument();
+        // The General placeholder content should be visible in the main pane.
+        expect(screen.getByText(/where settings go/i)).toBeInTheDocument();
     });
 
-    it('displays the settings body content', () => {
+    it('updates selection when a nav item is clicked', async () => {
+        const user = userEvent.setup();
         renderWithTheme(<SettingsPanel open={true} onClose={vi.fn()} />);
-        expect(screen.getByRole('tabpanel')).toBeInTheDocument();
+        const generalBtn = screen.getByRole('button', { name: /general/i });
+        await user.click(generalBtn);
+        expect(screen.getByText(/where settings go/i)).toBeInTheDocument();
     });
 
     it('does not render dialog content when closed', () => {

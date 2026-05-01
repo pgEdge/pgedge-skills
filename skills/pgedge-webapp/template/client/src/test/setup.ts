@@ -98,3 +98,21 @@ const sessionStorageMock = {
 };
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
+/*
+ * Replace the project-shared `SlideTransition` with a synchronous
+ * passthrough in every test. The settings panel uses
+ * `TransitionComponent={SlideTransition}` on its full-screen Dialog,
+ * which schedules `setTimeout` callbacks that fire outside React's
+ * `act()` boundary, emitting `not wrapped in act(...)` warnings.
+ *
+ * Mocking SlideTransition at the module level bypasses the Slide
+ * entirely and keeps the enter/exit lifecycle inside the current
+ * commit, so dialog tests inherit act-safe behaviour without per-file
+ * `vi.mock` calls. Any test that genuinely needs the real slide can
+ * opt back in with `vi.unmock('../components/shared/SlideTransition')`.
+ */
+vi.mock('../components/shared/SlideTransition', async () => {
+    const mod = await import('./ImmediateTransition');
+    return { default: mod.default };
+});
+
