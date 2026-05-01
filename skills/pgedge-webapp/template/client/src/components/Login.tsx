@@ -416,7 +416,6 @@ const Login = () => {
                                 onChange={(e) => { setUsername(e.target.value); }}
                                 margin="normal"
                                 required
-                                autoFocus
                                 disabled={loading}
                                 inputProps={{
                                     autoComplete: 'off',
