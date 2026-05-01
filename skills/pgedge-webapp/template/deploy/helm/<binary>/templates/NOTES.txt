@@ -1,0 +1,10 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Initial admin credentials:
+  Username: {{ .Values.initialAdmin.username }}
+  Password: kubectl get secret {{ default (printf "%s-admin" (include "<BINARY_NAME>.fullname" .)) .Values.initialAdmin.existingSecret }} -o jsonpath='{.data.password}' | base64 -d
+
+Rotate this password after first login.
+
+Note: replicaCount must remain 1 unless you replace the sqlite auth store
+and in-memory rate limiter.
