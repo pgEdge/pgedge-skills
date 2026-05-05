@@ -81,3 +81,62 @@ func TestOptional_AttachesUserWhenValid(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})).ServeHTTP(rec, req)
 }
+
+// ---- RequireSuperuser ----
+
+func TestRequireSuperuser_NoCookie_Returns401(t *testing.T) {
+	s := newTestStore(t)
+	mw := NewMiddleware(s, "test_session")
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	// No cookie → Required rejects before the superuser check.
+	mw.RequireSuperuser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Error("handler should not be called")
+	})).ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Errorf("code = %d, want 401", rec.Code)
+	}
+}
+
+func TestRequireSuperuser_NonSuperuser_Returns403(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "plain", Password: "Hunter2HunterTwo!", IsSuperuser: false})
+	tok, _ := s.CreateSession(ctx, "plain", time.Hour)
+
+	mw := NewMiddleware(s, "test_session")
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+
+	mw.RequireSuperuser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Error("handler should not be called")
+	})).ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Errorf("code = %d, want 403", rec.Code)
+	}
+}
+
+func TestRequireSuperuser_Superuser_PassesThrough(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "super", Password: "Hunter2HunterTwo!", IsSuperuser: true})
+	tok, _ := s.CreateSession(ctx, "super", time.Hour)
+
+	mw := NewMiddleware(s, "test_session")
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/", nil)
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+
+	called := false
+	mw.RequireSuperuser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusOK)
+	})).ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Errorf("code = %d, want 200", rec.Code)
+	}
+	if !called {
+		t.Error("next handler was not called")
+	}
+}
