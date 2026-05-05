@@ -20,11 +20,22 @@ const (
 // path and source "system" (the caller can decide whether to error).
 //
 // Search order:
-//  1. $XDG_CONFIG_HOME/pgedge/<configFilename> (or ~/.config/pgedge/...)
-//  2. /etc/pgedge/<configFilename>
+//  1. $XDG_CONFIG_HOME/pgedge/<configFilename>
+//  2. os.UserConfigDir()/pgedge/<configFilename>
+//     (~/.config on Linux, ~/Library/Application Support on macOS,
+//     %AppData% on Windows)
+//  3. /etc/pgedge/<configFilename>
 //
 // CLI override (--config) is handled by the caller before this function.
 func GetDefaultConfigPath(configFilename string) (path, source string) {
+	// Honor XDG_CONFIG_HOME explicitly so the same env var works on macOS
+	// and Windows (os.UserConfigDir does not consult it on those platforms).
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		candidate := filepath.Join(xdg, "pgedge", configFilename)
+		if FileExists(candidate) {
+			return candidate, SourceUser
+		}
+	}
 	if userDir, err := os.UserConfigDir(); err == nil {
 		candidate := filepath.Join(userDir, "pgedge", configFilename)
 		if FileExists(candidate) {
