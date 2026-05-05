@@ -47,7 +47,12 @@ When creating documentation scaffolding for a new project:
 
 1. Copy the entire `template/` contents into the project root.
 2. In `mkdocs.yml`, replace `<PROJECT NAME>` with the actual project
-   name and `<PROJECT REPO>` with the GitHub repository name.
+   name and `<PROJECT REPO>` with the GitHub repository name. Strip a
+   leading "pgEdge " (case-insensitive) from the project name before
+   substituting — the theme already renders the pgEdge logo, and
+   `site_name: pgEdge X` would double it up next to the logo. The
+   GitHub repo name (`<PROJECT REPO>`) is whatever the user actually
+   uses for the repository slug; do not normalize that.
 3. In `docs/index.md`, replace `<PROJECT NAME>` with the project name.
 4. In `docs/changelog.md`, replace `<PROJECT NAME>` with the project
    name.

@@ -29,7 +29,11 @@ parentheses.
 
 1. Target directory (must be empty or non-existent — abort if it has any
    contents, do not overwrite).
-2. Project display name (e.g., "My App").
+2. Project display name (e.g., "My App"). Strip a leading "pgEdge "
+   (case-insensitive) before storing as `<PROJECT_NAME>` — the docs
+   theme already shows the pgEdge logo, so re-adding the prefix to the
+   project name doubles it up. Result must be the same regardless of
+   whether the user supplied "pgEdge My App" or just "My App".
 3. Project slug — kebab-case, must match `^[a-z][a-z0-9-]*$`.
 4. Binary name — kebab-case (e.g., `my-app-server`).
 5. Go module path — must contain at least one `/`.
