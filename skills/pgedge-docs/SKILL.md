@@ -607,10 +607,10 @@ that confirms documented behavior matches the actual code.
 
 ### When This Section Applies
 
-When the working project ships a REST API and a `docs/docs/api/openapi.json`
+When the working project ships a REST API and a `docs/api/openapi.json`
 file (auto-detected via `.pgedge-webapp.json` from the `pgedge-webapp`
-skill, or any project with `docs/docs/api/openapi.json` plus a
-`docs/docs/api/browser.md` page).
+skill, or any project with `docs/api/openapi.json` plus a
+`docs/api/browser.md` page).
 
 ### Convention
 
@@ -624,15 +624,15 @@ plugins:
   - redoc-tag
 ```
 
-The browser page lives at `docs/docs/api/browser.md`. It uses a
+The browser page lives at `docs/api/browser.md`. It uses a
 `hide: [toc, navigation]` frontmatter and inline CSS to hide the
 mkdocs chrome around the embedded Redoc iframe; the body is a single
 `<redoc src="openapi.json"/>` tag plus a small script that re-applies
 inherited colors inside the iframe. The full page is shipped verbatim
 in the `pgedge-webapp` template at
-`template/docs/docs/api/browser.md` — copy it as-is.
+`template/docs/api/browser.md` — copy it as-is.
 
-The OpenAPI specification lives at `docs/docs/api/openapi.json` and is
+The OpenAPI specification lives at `docs/api/openapi.json` and is
 regenerated from the server binary by `make openapi`:
 
 ```
@@ -647,7 +647,7 @@ the committed copy to catch drift.
 ### Adding the API Browser to a Scaffolded Project
 
 When `pgedge-docs` scaffolds a docs site for a project that has
-`docs/docs/api/openapi.json`:
+`docs/api/openapi.json`:
 
 1. Add `redoc-tag` to the `plugins:` list in `mkdocs.yml`.
 2. Add a nav entry for the API browser:
@@ -655,7 +655,7 @@ When `pgedge-docs` scaffolds a docs site for a project that has
    - For Developers:
        - API Browser: api/browser.md
    ```
-3. Confirm `docs/docs/api/browser.md` exists (it ships with
+3. Confirm `docs/api/browser.md` exists (it ships with
    `pgedge-webapp` templates).
 4. Run `mkdocs build --strict` to verify the page renders without
    warnings.

@@ -29,5 +29,5 @@ clean:
 
 # Regenerate the static OpenAPI specification from the programmatic builder.
 openapi:
-	cd src && go run ./cmd/<BINARY_NAME> --generate-openapi-spec > ../../docs/docs/api/openapi.json
-	@echo "OpenAPI spec written to docs/docs/api/openapi.json"
+	cd src && go run ./cmd/<BINARY_NAME> --generate-openapi-spec > ../../docs/api/openapi.json
+	@echo "OpenAPI spec written to docs/api/openapi.json"
