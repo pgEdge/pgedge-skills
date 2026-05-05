@@ -38,6 +38,22 @@ func NewRouter(d Deps) http.Handler {
 	mux.Handle("GET /api/v1/hello",
 		d.Middleware.Required(http.HandlerFunc(helloHandler)))
 
+	// User management — superuser only.
+	mux.Handle("GET /api/v1/users",
+		d.Middleware.RequireSuperuser(http.HandlerFunc(d.Handlers.ListUsers)))
+	mux.Handle("POST /api/v1/users",
+		d.Middleware.RequireSuperuser(http.HandlerFunc(d.Handlers.CreateUser)))
+	mux.Handle("PATCH /api/v1/users/{username}",
+		d.Middleware.RequireSuperuser(http.HandlerFunc(d.Handlers.UpdateUser)))
+	mux.Handle("DELETE /api/v1/users/{username}",
+		d.Middleware.RequireSuperuser(http.HandlerFunc(d.Handlers.DeleteUser)))
+	mux.Handle("POST /api/v1/users/{username}/password",
+		d.Middleware.RequireSuperuser(http.HandlerFunc(d.Handlers.AdminResetPassword)))
+
+	// Self-service password change — any authenticated user.
+	mux.Handle("POST /api/v1/user/password",
+		d.Middleware.Required(http.HandlerFunc(d.Handlers.SelfChangePassword)))
+
 	return mux
 }
 

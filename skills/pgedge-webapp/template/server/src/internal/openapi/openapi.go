@@ -53,6 +53,7 @@ func buildTags() A {
 		M{"name": "Health", "description": "Health probe endpoints."},
 		M{"name": "Auth", "description": "Session login and logout."},
 		M{"name": "User", "description": "Authenticated user information."},
+		M{"name": "Users", "description": "User management (superuser only)."},
 		M{"name": "OpenAPI", "description": "OpenAPI specification endpoint."},
 	}
 }
@@ -147,6 +148,116 @@ func buildPaths() M {
 				},
 			},
 		},
+		"/api/v1/users": M{
+			"get": M{
+				"tags":        A{"Users"},
+				"summary":     "List all users.",
+				"description": "Returns all users ordered by username. Requires superuser.",
+				"security":    sessionAuth(),
+				"responses": M{
+					"200": M{"description": "User list.", "content": jsonContent(M{"type": "array", "items": ref("UserListItem")})},
+					"401": M{"description": "Not authenticated.", "content": jsonContent(ref("ErrorResponse"))},
+					"403": M{"description": "Forbidden — not a superuser.", "content": jsonContent(ref("ErrorResponse"))},
+				},
+			},
+			"post": M{
+				"tags":        A{"Users"},
+				"summary":     "Create a user.",
+				"description": "Creates a new user. Requires superuser.",
+				"security":    sessionAuth(),
+				"requestBody": M{
+					"required": true,
+					"content":  jsonContent(ref("CreateUserRequest")),
+				},
+				"responses": M{
+					"201": M{"description": "User created.", "content": jsonContent(ref("CreateUserResponse"))},
+					"400": M{"description": "Missing username or password.", "content": jsonContent(ref("ErrorResponse"))},
+					"401": M{"description": "Not authenticated.", "content": jsonContent(ref("ErrorResponse"))},
+					"403": M{"description": "Forbidden — not a superuser.", "content": jsonContent(ref("ErrorResponse"))},
+					"409": M{"description": "Username already exists.", "content": jsonContent(ref("ErrorResponse"))},
+				},
+			},
+		},
+		"/api/v1/users/{username}": M{
+			"patch": M{
+				"tags":        A{"Users"},
+				"summary":     "Update a user.",
+				"description": "Updates profile and/or flags. All fields are optional. Requires superuser.",
+				"security":    sessionAuth(),
+				"parameters": A{M{
+					"name": "username", "in": "path", "required": true,
+					"schema": M{"type": "string"},
+				}},
+				"requestBody": M{
+					"required": true,
+					"content":  jsonContent(ref("UpdateUserRequest")),
+				},
+				"responses": M{
+					"200": M{"description": "Update applied.", "content": jsonContent(ref("Success"))},
+					"400": M{"description": "Safety rail violation.", "content": jsonContent(ref("ErrorResponse"))},
+					"401": M{"description": "Not authenticated.", "content": jsonContent(ref("ErrorResponse"))},
+					"403": M{"description": "Forbidden — not a superuser.", "content": jsonContent(ref("ErrorResponse"))},
+					"404": M{"description": "User not found.", "content": jsonContent(ref("ErrorResponse"))},
+				},
+			},
+			"delete": M{
+				"tags":        A{"Users"},
+				"summary":     "Delete a user.",
+				"description": "Deletes the user and cascades sessions. Requires superuser.",
+				"security":    sessionAuth(),
+				"parameters": A{M{
+					"name": "username", "in": "path", "required": true,
+					"schema": M{"type": "string"},
+				}},
+				"responses": M{
+					"204": M{"description": "Deleted."},
+					"400": M{"description": "Cannot delete yourself.", "content": jsonContent(ref("ErrorResponse"))},
+					"401": M{"description": "Not authenticated.", "content": jsonContent(ref("ErrorResponse"))},
+					"403": M{"description": "Forbidden — not a superuser.", "content": jsonContent(ref("ErrorResponse"))},
+					"404": M{"description": "User not found.", "content": jsonContent(ref("ErrorResponse"))},
+				},
+			},
+		},
+		"/api/v1/users/{username}/password": M{
+			"post": M{
+				"tags":        A{"Users"},
+				"summary":     "Admin password reset.",
+				"description": "Resets a user's password without verifying the old one. Requires superuser.",
+				"security":    sessionAuth(),
+				"parameters": A{M{
+					"name": "username", "in": "path", "required": true,
+					"schema": M{"type": "string"},
+				}},
+				"requestBody": M{
+					"required": true,
+					"content":  jsonContent(ref("AdminPasswordResetRequest")),
+				},
+				"responses": M{
+					"200": M{"description": "Password updated.", "content": jsonContent(ref("Success"))},
+					"400": M{"description": "Empty new_password.", "content": jsonContent(ref("ErrorResponse"))},
+					"401": M{"description": "Not authenticated.", "content": jsonContent(ref("ErrorResponse"))},
+					"403": M{"description": "Forbidden — not a superuser.", "content": jsonContent(ref("ErrorResponse"))},
+					"404": M{"description": "User not found.", "content": jsonContent(ref("ErrorResponse"))},
+				},
+			},
+		},
+		"/api/v1/user/password": M{
+			"post": M{
+				"tags":        A{"User"},
+				"summary":     "Self-service password change.",
+				"description": "Changes the caller's own password after verifying the current one.",
+				"security":    sessionAuth(),
+				"requestBody": M{
+					"required": true,
+					"content":  jsonContent(ref("SelfPasswordChangeRequest")),
+				},
+				"responses": M{
+					"200": M{"description": "Password changed.", "content": jsonContent(ref("Success"))},
+					"400": M{"description": "Empty new_password.", "content": jsonContent(ref("ErrorResponse"))},
+					"401": M{"description": "Not authenticated or wrong current password.", "content": jsonContent(ref("ErrorResponse"))},
+				},
+			},
+		},
 		"/api/v1/openapi.json": M{
 			"get": M{
 				"tags":        A{"OpenAPI"},
@@ -226,6 +337,60 @@ func buildSchemas() M {
 			"properties": M{
 				"error":   M{"type": "string"},
 				"message": M{"type": "string"},
+			},
+		},
+		"UserListItem": M{
+			"type":     "object",
+			"required": A{"username", "full_name", "email", "is_superuser", "enabled"},
+			"properties": M{
+				"username":     M{"type": "string"},
+				"full_name":    M{"type": "string"},
+				"email":        M{"type": "string"},
+				"is_superuser": M{"type": "boolean"},
+				"enabled":      M{"type": "boolean"},
+			},
+		},
+		"CreateUserRequest": M{
+			"type":     "object",
+			"required": A{"username", "password"},
+			"properties": M{
+				"username":     M{"type": "string", "example": "bob"},
+				"password":     M{"type": "string", "format": "password"},
+				"full_name":    M{"type": "string"},
+				"email":        M{"type": "string", "format": "email"},
+				"is_superuser": M{"type": "boolean"},
+			},
+		},
+		"CreateUserResponse": M{
+			"type":     "object",
+			"required": A{"success", "username"},
+			"properties": M{
+				"success":  M{"type": "boolean"},
+				"username": M{"type": "string"},
+			},
+		},
+		"UpdateUserRequest": M{
+			"type": "object",
+			"properties": M{
+				"full_name":    M{"type": "string"},
+				"email":        M{"type": "string", "format": "email"},
+				"is_superuser": M{"type": "boolean"},
+				"enabled":      M{"type": "boolean"},
+			},
+		},
+		"AdminPasswordResetRequest": M{
+			"type":     "object",
+			"required": A{"new_password"},
+			"properties": M{
+				"new_password": M{"type": "string", "format": "password"},
+			},
+		},
+		"SelfPasswordChangeRequest": M{
+			"type":     "object",
+			"required": A{"current_password", "new_password"},
+			"properties": M{
+				"current_password": M{"type": "string", "format": "password"},
+				"new_password":     M{"type": "string", "format": "password"},
 			},
 		},
 	}

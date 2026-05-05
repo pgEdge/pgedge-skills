@@ -206,3 +206,89 @@ func TestRouter_LoginMalformedJSON(t *testing.T) {
 		t.Errorf("code = %d", rec.Code)
 	}
 }
+
+// ---- User management routes ----
+
+func TestRouter_ListUsers_RequiresAuth(t *testing.T) {
+	r := NewRouter(testDeps(t))
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, httptest.NewRequest("GET", "/api/v1/users", nil))
+	if rec.Code != http.StatusUnauthorized {
+		t.Errorf("code = %d", rec.Code)
+	}
+}
+
+func TestRouter_ListUsers_RequiresSuperuser(t *testing.T) {
+	deps := testDeps(t)
+	ctx := context.Background()
+	_ = deps.Store.CreateUser(ctx, auth.CreateUserParams{Username: "plain", Password: "Hunter2HunterTwo!", IsSuperuser: false})
+	tok, _ := deps.Store.CreateSession(ctx, "plain", time.Hour)
+
+	r := NewRouter(deps)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/api/v1/users", nil)
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Errorf("code = %d", rec.Code)
+	}
+}
+
+func TestRouter_CreateAndListUsers(t *testing.T) {
+	deps := testDeps(t)
+	ctx := context.Background()
+	_ = deps.Store.CreateUser(ctx, auth.CreateUserParams{Username: "admin", Password: "Hunter2HunterTwo!", IsSuperuser: true})
+	tok, _ := deps.Store.CreateSession(ctx, "admin", time.Hour)
+
+	r := NewRouter(deps)
+
+	// Create a user.
+	body := strings.NewReader(`{"username":"newbie","password":"NewPass123!"}`)
+	req := httptest.NewRequest("POST", "/api/v1/users", body)
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create code = %d body = %s", rec.Code, rec.Body.String())
+	}
+
+	// List users.
+	req2 := httptest.NewRequest("GET", "/api/v1/users", nil)
+	req2.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+	rec2 := httptest.NewRecorder()
+	r.ServeHTTP(rec2, req2)
+	if rec2.Code != http.StatusOK {
+		t.Fatalf("list code = %d", rec2.Code)
+	}
+	if !strings.Contains(rec2.Body.String(), "newbie") {
+		t.Errorf("newbie not in list: %s", rec2.Body.String())
+	}
+}
+
+func TestRouter_SelfPasswordChange_RequiresAuth(t *testing.T) {
+	r := NewRouter(testDeps(t))
+	body := strings.NewReader(`{"current_password":"x","new_password":"y"}`)
+	req := httptest.NewRequest("POST", "/api/v1/user/password", body)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Errorf("code = %d", rec.Code)
+	}
+}
+
+func TestRouter_DeleteUser_RequiresSuperuser(t *testing.T) {
+	deps := testDeps(t)
+	ctx := context.Background()
+	_ = deps.Store.CreateUser(ctx, auth.CreateUserParams{Username: "plain", Password: "Hunter2HunterTwo!", IsSuperuser: false})
+	tok, _ := deps.Store.CreateSession(ctx, "plain", time.Hour)
+
+	r := NewRouter(deps)
+	req := httptest.NewRequest("DELETE", "/api/v1/users/someone", nil)
+	req.AddCookie(&http.Cookie{Name: "test_session", Value: tok})
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Errorf("code = %d", rec.Code)
+	}
+}

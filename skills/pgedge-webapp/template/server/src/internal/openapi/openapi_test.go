@@ -26,8 +26,12 @@ func TestBuildSpec_AllExpectedPaths(t *testing.T) {
 		"/api/v1/auth/login",
 		"/api/v1/auth/logout",
 		"/api/v1/user/info",
+		"/api/v1/user/password",
 		"/api/v1/hello",
 		"/api/v1/openapi.json",
+		"/api/v1/users",
+		"/api/v1/users/{username}",
+		"/api/v1/users/{username}/password",
 	}
 	for _, p := range want {
 		if _, ok := paths[p]; !ok {
@@ -63,5 +67,33 @@ func TestBuildSpec_CookieSecurityScheme(t *testing.T) {
 	}
 	if cookie["type"] != "apiKey" {
 		t.Errorf("expected type=apiKey, got %v", cookie["type"])
+	}
+}
+
+func TestBuildSpec_UsersTag(t *testing.T) {
+	spec := BuildSpec()
+	tags, _ := spec["tags"].(A)
+	found := false
+	for _, tag := range tags {
+		if m, ok := tag.(M); ok && m["name"] == "Users" {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("missing Users tag")
+	}
+}
+
+func TestBuildSpec_UserSchemas(t *testing.T) {
+	spec := BuildSpec()
+	components, _ := spec["components"].(M)
+	schemas, _ := components["schemas"].(M)
+	for _, name := range []string{
+		"UserListItem", "CreateUserRequest", "CreateUserResponse",
+		"UpdateUserRequest", "AdminPasswordResetRequest", "SelfPasswordChangeRequest",
+	} {
+		if _, ok := schemas[name]; !ok {
+			t.Errorf("missing schema %q", name)
+		}
 	}
 }

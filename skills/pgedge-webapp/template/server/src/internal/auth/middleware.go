@@ -49,6 +49,19 @@ func (m *Middleware) Optional(next http.Handler) http.Handler {
 	})
 }
 
+// RequireSuperuser returns a handler that 403s when the caller is not a superuser.
+// It wraps Required so it also 401s when no valid session cookie is set.
+func (m *Middleware) RequireSuperuser(next http.Handler) http.Handler {
+	return m.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		u, ok := UserFromContext(r.Context())
+		if !ok || !u.IsSuperuser {
+			http.Error(w, `{"error":"forbidden"}`, http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	}))
+}
+
 func (m *Middleware) userFromRequest(r *http.Request) (*User, bool) {
 	c, err := r.Cookie(m.cookieName)
 	if err != nil || c.Value == "" {
