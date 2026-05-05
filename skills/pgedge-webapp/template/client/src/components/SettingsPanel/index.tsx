@@ -6,6 +6,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { Close as CloseIcon } from '@mui/icons-material';
 import SlideTransition from '../shared/SlideTransition';
+import AdminUsers from './AdminUsers';
 
 interface SettingsItem {
     id: string;
@@ -30,6 +31,12 @@ const GeneralPlaceholder: React.FC = () => (
  * renders its Component in the right-hand pane when selected.
  */
 const SECTIONS: SettingsSection[] = [
+    {
+        category: 'Security',
+        items: [
+            { id: 'users', label: 'Users', Component: AdminUsers },
+        ],
+    },
     {
         category: 'General',
         items: [

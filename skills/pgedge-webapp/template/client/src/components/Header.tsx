@@ -11,6 +11,7 @@ import {
     Logout as LogoutIcon,
     HelpOutline as HelpIcon,
     Settings as SettingsIcon,
+    Lock as LockIcon,
 } from '@mui/icons-material';
 import logoLight from '../assets/images/logo-light.png';
 import logoDark from '../assets/images/logo-dark.png';
@@ -18,6 +19,7 @@ import { useAuth } from '../contexts/useAuth';
 import { useMenu } from '../hooks/useMenu';
 import HelpPanel from './HelpPanel';
 import SettingsPanel from './SettingsPanel';
+import ChangePasswordDialog from './Header/ChangePasswordDialog';
 
 const toolbarSx = { minHeight: { xs: 56, sm: 64 } };
 const logoContainerSx = { display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1.5 };
@@ -89,6 +91,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleTheme }) => {
     const userMenu = useMenu();
     const [helpOpen, setHelpOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
     const handleLogout = () => {
         userMenu.handleClose();
@@ -156,6 +159,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleTheme }) => {
                     <Typography variant="body2" sx={getUsernameSx}>{user?.username}</Typography>
                 </Box>
                 <Divider />
+                <MenuItem onClick={() => { userMenu.handleClose(); setChangePasswordOpen(true); }}>
+                    <ListItemIcon><LockIcon fontSize="small" /></ListItemIcon>
+                    <ListItemText primary="Change Password" />
+                </MenuItem>
+                <Divider />
                 <MenuItem onClick={handleLogout} sx={getLogoutMenuItemSx}>
                     <ListItemIcon sx={listItemIconSx}><LogoutIcon fontSize="small" /></ListItemIcon>
                     <ListItemText primary="Sign out" primaryTypographyProps={signOutTypographyProps} />
@@ -164,6 +172,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleTheme }) => {
 
             <HelpPanel open={helpOpen} onClose={() => { setHelpOpen(false); }} />
             <SettingsPanel open={settingsOpen} onClose={() => { setSettingsOpen(false); }} />
+            <ChangePasswordDialog open={changePasswordOpen} onClose={() => { setChangePasswordOpen(false); }} />
         </>
     );
 };

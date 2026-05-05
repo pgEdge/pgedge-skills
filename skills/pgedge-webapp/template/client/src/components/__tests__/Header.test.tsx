@@ -128,6 +128,20 @@ describe('Header', () => {
         expect(screen.getByText('?')).toBeInTheDocument();
     });
 
+    it('opens the change password dialog when menu item is clicked', async () => {
+        const user = userEvent.setup();
+        renderHeader();
+        // Open user menu
+        await user.click(await screen.findByLabelText('user menu'));
+        // Click Change Password menu item
+        const changePasswordItem = await screen.findByText(/change password/i);
+        await user.click(changePasswordItem);
+        // Dialog should be visible
+        await waitFor(() => {
+            expect(screen.getByRole('dialog', { name: /change password/i })).toBeInTheDocument();
+        });
+    });
+
     it('has no a11y violations', async () => {
         const { container } = renderHeader();
         await waitFor(() => screen.getByLabelText('toggle theme'));
