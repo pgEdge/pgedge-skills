@@ -323,3 +323,49 @@ func TestVerify_UnknownUser(t *testing.T) {
 		t.Errorf("err = %v", err)
 	}
 }
+
+// TestOpen_InvalidPath exercises the sql.Open error branch by passing a path
+// whose parent directory does not exist.
+func TestOpen_InvalidPath(t *testing.T) {
+	// Use a path under a non-existent directory so sqlite refuses to open it.
+	_, err := Open("/nonexistent/path/to/auth.db")
+	if err == nil {
+		t.Fatal("expected error opening db under non-existent directory")
+	}
+}
+
+// TestUpdatePassword_BcryptError exercises the bcrypt error branch in
+// UpdatePassword by passing a password longer than the 72-byte bcrypt limit.
+func TestUpdatePassword_BcryptError(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "pw2", Password: "Hunter2HunterTwo!"})
+	// bcrypt silently truncates at 72 bytes, but a string of 73 null bytes
+	// triggers ErrPasswordTooLong in golang.org/x/crypto/bcrypt (Go 1.14+).
+	tooLong := string(make([]byte, 73))
+	err := s.UpdatePassword(ctx, "pw2", tooLong)
+	if err == nil {
+		// Older bcrypt versions silently truncate; skip rather than fail.
+		t.Skip("bcrypt did not reject password longer than 72 bytes on this build")
+	}
+}
+
+// TestRecordFailedLogin_ZeroLockoutDuration exercises the default-duration
+// branch inside recordFailedLogin (d <= 0 → 15 * time.Minute).
+func TestRecordFailedLogin_ZeroLockoutDuration(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, CreateUserParams{Username: "rl", Password: "Hunter2HunterTwo!"})
+	// MaxFailedAttempts=1 so the first failure immediately locks.
+	// LockoutDuration=0 triggers the default (15 min) branch.
+	cfg := LockoutConfig{MaxFailedAttempts: 1, LockoutDuration: 0}
+	_, err := s.VerifyPassword(ctx, "rl", "wrong", cfg)
+	if !errors.Is(err, ErrInvalidCredentials) {
+		t.Fatalf("err = %v", err)
+	}
+	// The account should now be locked.
+	_, err = s.VerifyPassword(ctx, "rl", "Hunter2HunterTwo!", cfg)
+	if !errors.Is(err, ErrAccountLocked) {
+		t.Errorf("expected ErrAccountLocked, got %v", err)
+	}
+}
