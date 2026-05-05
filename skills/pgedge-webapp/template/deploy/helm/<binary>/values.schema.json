@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["image", "service", "config"],
+    "properties": {
+        "replicaCount": { "type": "integer", "minimum": 1, "maximum": 1 },
+        "image": {
+            "type": "object",
+            "required": ["repository", "pullPolicy"],
+            "properties": {
+                "repository": { "type": "string", "minLength": 1 },
+                "tag": { "type": "string" },
+                "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+            }
+        },
+        "service": {
+            "type": "object",
+            "properties": {
+                "type": { "enum": ["ClusterIP", "NodePort", "LoadBalancer"] },
+                "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+            }
+        },
+        "persistence": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "size": { "type": "string", "pattern": "^[0-9]+[KMGT]i?$" }
+            }
+        }
+    }
+}

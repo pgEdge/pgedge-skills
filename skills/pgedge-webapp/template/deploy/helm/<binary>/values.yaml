@@ -1,0 +1,66 @@
+image:
+  repository: ghcr.io/example/<BINARY_NAME>
+  tag: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# NOTE: replicaCount > 1 requires replacing the sqlite auth store and the
+# in-memory rate limiter. Default 1 is the only configuration the scaffold
+# supports out of the box.
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: <HTTP_PORT>
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: <BINARY_NAME>.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: ""
+  accessModes: [ReadWriteOnce]
+
+config:
+  http:
+    address: ":<HTTP_PORT>"
+    cors_origin: ""
+    hsts_enabled: false
+  auth:
+    max_failed_attempts_before_lockout: 10
+    rate_limit_window_minutes: 15
+    rate_limit_max_attempts: 10
+    session_lifetime_hours: 24
+
+initialAdmin:
+  username: admin
+  existingSecret: ""
+  existingSecretKey: password
+
+resources:
+  limits:   { cpu: 500m, memory: 256Mi }
+  requests: { cpu: 100m, memory: 64Mi }
+
+podSecurityContext:
+  fsGroup: 65532
+  runAsNonRoot: true
+  runAsUser: 65532
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+
+probes:
+  liveness:  { path: /health, initialDelaySeconds: 5, periodSeconds: 10 }
+  readiness: { path: /health, initialDelaySeconds: 2, periodSeconds: 5 }

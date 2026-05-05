@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "<BINARY_NAME>.fullname" . }}
+  labels: {{- include "<BINARY_NAME>.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: {{- include "<BINARY_NAME>.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "<BINARY_NAME>.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "<BINARY_NAME>.fullname" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ include "<BINARY_NAME>.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "--config"
+            - "/etc/pgedge/<BINARY_NAME>.yaml"
+            - "--data-dir"
+            - "/data"
+            - "--admin-password-file"
+            - "/etc/pgedge/admin-password"
+          ports:
+            - name: http
+              containerPort: <HTTP_PORT>
+          livenessProbe:
+            httpGet: { path: {{ .Values.probes.liveness.path }}, port: http }
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet: { path: {{ .Values.probes.readiness.path }}, port: http }
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pgedge/<BINARY_NAME>.yaml
+              subPath: <BINARY_NAME>.yaml
+              readOnly: true
+            - name: admin-password
+              mountPath: /etc/pgedge/admin-password
+              subPath: password
+              readOnly: true
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: /data
+            {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "<BINARY_NAME>.fullname" . }}-config
+        - name: admin-password
+          secret:
+            secretName: {{ default (printf "%s-admin" (include "<BINARY_NAME>.fullname" .)) .Values.initialAdmin.existingSecret }}
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "<BINARY_NAME>.fullname" . }}-data
+        {{- end }}

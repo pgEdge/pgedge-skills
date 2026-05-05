@@ -1,0 +1,21 @@
+# Local production-mode test of <PROJECT_NAME>.
+#
+# Before starting:
+#   mkdir -p docker/config
+#   cp examples/<BINARY_NAME>.yaml docker/config/
+#   docker compose up --build
+
+services:
+  <BINARY_NAME>:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/config/<BINARY_NAME>.yaml:/etc/pgedge/<BINARY_NAME>.yaml:ro
+      - <BINARY_NAME>-data:/data
+    ports:
+      - "${HTTP_PORT:-<HTTP_PORT>}:<HTTP_PORT>"
+    restart: unless-stopped
+
+volumes:
+  <BINARY_NAME>-data:

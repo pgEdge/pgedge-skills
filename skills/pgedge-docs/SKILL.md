@@ -535,3 +535,127 @@ When reviewing documentation, verify:
 - [ ] Default values and valid ranges match the code
 - [ ] Behavioral descriptions match the actual implementation
 - [ ] Sub-agent verification against source code completed
+
+## In-App Help Panel Content (Online Help)
+
+### When This Section Applies
+
+These rules apply when authoring help content rendered inside an
+application's help panel. The section activates when the user mentions
+"in-app help", "online help", "help panel", "help content", or "help
+pages", or when the working project contains
+`client/src/components/HelpPanel/pages/` (an artifact of the
+`pgedge-webapp` skill).
+
+### File Locations and Layout
+
+Each help page is one Markdown file under
+`client/src/components/HelpPanel/pages/` paired with a thin React
+wrapper that imports the Markdown and feeds it to a shared renderer.
+The Markdown filename is kebab-case matching the page's route key.
+Register every page in `pages/index.ts` with
+`{ key, title, component }`. When adding a page, add the markdown,
+the wrapper, and the registry entry in a single change.
+
+### Page Structure
+
+In-app help follows the same writing rules as user-facing docs (one
+`#` heading, intro paragraph after every heading, lead-in colons before
+lists, product names as proper nouns, line wrap at 79), with three
+differences appropriate to the in-app context:
+
+- No "Next Steps" section. The Help panel is a side drawer; users
+  return to the application, not to another doc page.
+- No external links to docs.pgedge.com from in-app pages — instead,
+  link to other help pages via `[label](page:<key>)`. The renderer
+  rewrites these links to navigate within the panel.
+- Pages should stay short. Anything over ~400 words is a candidate to
+  split or to relocate to docs.pgedge.com.
+
+### React-Markdown Rendering Constraints
+
+The Help panel uses `react-markdown` plus `remark-gfm`. This means:
+
+- Standard CommonMark plus GFM tables, task lists, and strikethrough
+  are supported.
+- Admonitions are not supported. Wrap content in MUI
+  `<Alert severity="info">` inside the wrapper, not in Markdown.
+- Custom HTML in Markdown is sanitized; inline `<style>` and
+  `<script>` will not render.
+- Code fences with language tags work via
+  `react-syntax-highlighter`.
+
+### Linking Between Pages
+
+Use `[label](page:<key>)` for in-panel links. Do not use
+`https://docs.pgedge.com/...` from in-app help; if depth is needed,
+summarize and link with `target="_blank" rel="noopener"`.
+
+### Images and Assets
+
+Images live alongside the markdown in
+`client/src/components/HelpPanel/pages/img/<page-key>/` and are bundled
+by Vite. Provide alt text on every image.
+
+### Verifying In-App Help Content
+
+The verification rule from the user-facing-docs section also applies to
+in-app help. After authoring or editing any page, launch a sub-agent
+that confirms documented behavior matches the actual code.
+
+## OpenAPI Browser (Online API Reference)
+
+### When This Section Applies
+
+When the working project ships a REST API and a `docs/docs/api/openapi.json`
+file (auto-detected via `.pgedge-webapp.json` from the `pgedge-webapp`
+skill, or any project with `docs/docs/api/openapi.json` plus a
+`docs/docs/api/browser.md` page).
+
+### Convention
+
+Mirror the pattern used by `pgedge-postgres-mcp` and `ai-dba-workbench`.
+The `mkdocs.yml` declares the `redoc-tag` plugin in its `plugins:` list
+(no version pin):
+
+```yaml
+plugins:
+  - search
+  - redoc-tag
+```
+
+The browser page lives at `docs/docs/api/browser.md`. It uses a
+`hide: [toc, navigation]` frontmatter and inline CSS to hide the
+mkdocs chrome around the embedded Redoc iframe; the body is a single
+`<redoc src="openapi.json"/>` tag plus a small script that re-applies
+inherited colors inside the iframe. The full page is shipped verbatim
+in the `pgedge-webapp` template at
+`template/docs/docs/api/browser.md` — copy it as-is.
+
+The OpenAPI specification lives at `docs/docs/api/openapi.json` and is
+regenerated from the server binary by `make openapi`:
+
+```
+make openapi
+```
+
+This invokes `<binary> --generate-openapi-spec` (or `-openapi`,
+matching the project's flag name) and redirects stdout to the file. The
+file should be committed; CI re-runs `make openapi` and diffs against
+the committed copy to catch drift.
+
+### Adding the API Browser to a Scaffolded Project
+
+When `pgedge-docs` scaffolds a docs site for a project that has
+`docs/docs/api/openapi.json`:
+
+1. Add `redoc-tag` to the `plugins:` list in `mkdocs.yml`.
+2. Add a nav entry for the API browser:
+   ```yaml
+   - For Developers:
+       - API Browser: api/browser.md
+   ```
+3. Confirm `docs/docs/api/browser.md` exists (it ships with
+   `pgedge-webapp` templates).
+4. Run `mkdocs build --strict` to verify the page renders without
+   warnings.

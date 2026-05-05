@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "<BINARY_NAME>.fullname" . }}-config
+  labels: {{- include "<BINARY_NAME>.labels" . | nindent 4 }}
+data:
+  <BINARY_NAME>.yaml: |
+{{ toYaml .Values.config | indent 4 }}
