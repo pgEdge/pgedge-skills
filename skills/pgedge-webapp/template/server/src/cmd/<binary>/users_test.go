@@ -177,3 +177,94 @@ func TestIsSet(t *testing.T) {
 		t.Error("cert should not be set")
 	}
 }
+
+// TestAddUser_NoPassword covers the pw=="" branch (no -password flag and no
+// -password-file flag).
+func TestAddUser_NoPassword(t *testing.T) {
+	s := newStore(t)
+	f, _ := ParseFlags([]string{"-add-user", "-username", "nopass"}, "")
+	err := runUserCommand(context.Background(), s, f, &bytes.Buffer{})
+	if err == nil {
+		t.Fatal("expected error for missing password")
+	}
+}
+
+// TestAddUser_BadPasswordFile covers the ResolvePassword error branch in
+// addUser (password-file points to a non-existent file).
+func TestAddUser_BadPasswordFile(t *testing.T) {
+	s := newStore(t)
+	f, _ := ParseFlags([]string{
+		"-add-user", "-username", "badpf",
+		"-password-file", "/nonexistent/password.txt",
+	}, "")
+	if err := runUserCommand(context.Background(), s, f, &bytes.Buffer{}); err == nil {
+		t.Fatal("expected error for bad password-file")
+	}
+}
+
+// TestListUsers_ClosedStore covers the listUsers error branch.
+func TestListUsers_ClosedStore(t *testing.T) {
+	s := newStore(t)
+	_ = s.Close()
+	f, _ := ParseFlags([]string{"-list-users"}, "")
+	if err := runUserCommand(context.Background(), s, f, &bytes.Buffer{}); err == nil {
+		t.Fatal("expected error with closed store")
+	}
+}
+
+// TestUpdateUser_BadPasswordFile covers the ResolvePassword error branch in
+// updateUser (password-file points to a non-existent file).
+func TestUpdateUser_BadPasswordFile(t *testing.T) {
+	s := newStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, auth.CreateUserParams{Username: "upbpf", Password: "Hunter2HunterTwo!"})
+	f, _ := ParseFlags([]string{
+		"-update-user", "-username", "upbpf",
+		"-password-file", "/nonexistent/password.txt",
+	}, "")
+	if err := runUserCommand(ctx, s, f, &bytes.Buffer{}); err == nil {
+		t.Fatal("expected error for bad password-file")
+	}
+}
+
+// TestUpdateUser_ProfileError covers the UpdateProfile error branch (user not found).
+func TestUpdateUser_ProfileError(t *testing.T) {
+	s := newStore(t)
+	f, _ := ParseFlags([]string{
+		"-update-user", "-username", "ghost",
+		"-full-name", "Ghost User",
+	}, "")
+	if err := runUserCommand(context.Background(), s, f, &bytes.Buffer{}); err == nil {
+		t.Fatal("expected error when user not found")
+	}
+}
+
+// TestUpdateUser_PasswordError covers the UpdatePassword error branch (user not found).
+func TestUpdateUser_PasswordError(t *testing.T) {
+	s := newStore(t)
+	f, _ := ParseFlags([]string{
+		"-update-user", "-username", "ghost",
+		"-password", "NewPass99!",
+	}, "")
+	if err := runUserCommand(context.Background(), s, f, &bytes.Buffer{}); err == nil {
+		t.Fatal("expected error when user not found")
+	}
+}
+
+// TestListUsers_TwoUsers covers the for-range loop in listUsers with multiple
+// entries and verifies both usernames appear in the output.
+func TestListUsers_TwoUsers(t *testing.T) {
+	s := newStore(t)
+	ctx := context.Background()
+	_ = s.CreateUser(ctx, auth.CreateUserParams{Username: "alpha", Password: "Hunter2HunterTwo!"})
+	_ = s.CreateUser(ctx, auth.CreateUserParams{Username: "beta", Password: "Hunter2HunterTwo!"})
+	f, _ := ParseFlags([]string{"-list-users"}, "")
+	var buf bytes.Buffer
+	if err := runUserCommand(ctx, s, f, &buf); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "alpha") || !strings.Contains(out, "beta") {
+		t.Errorf("output missing users: %q", out)
+	}
+}
