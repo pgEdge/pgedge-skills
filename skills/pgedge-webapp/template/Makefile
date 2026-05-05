@@ -1,5 +1,5 @@
 .PHONY: build build-server build-client test test-server test-client coverage \
-        coverage-check lint format dev docker helm-lint helm-template clean
+        coverage-check lint format dev docker helm-lint helm-template clean openapi
 
 build: build-server build-client
 
@@ -47,3 +47,9 @@ helm-template:
 
 clean:
 	rm -rf bin client/dist client/coverage server/src/coverage.out
+
+# Regenerate docs/docs/api/openapi.json from the server's programmatic
+# spec builder. Delegates to the server Makefile, which knows the
+# binary path and runs `<binary> --generate-openapi-spec`.
+openapi:
+	$(MAKE) -C server openapi

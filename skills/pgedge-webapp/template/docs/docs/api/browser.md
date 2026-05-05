@@ -1,5 +1,3 @@
-# API Browser
-
 ---
 hide:
   - toc
