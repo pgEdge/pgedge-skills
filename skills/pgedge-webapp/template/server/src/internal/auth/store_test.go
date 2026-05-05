@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func newTestStore(t *testing.T) *Store {
@@ -207,6 +209,37 @@ func TestStore_CreateUserWithHash(t *testing.T) {
 	// Duplicate should fail.
 	if err := s.CreateUserWithHash(ctx, "hashuser", hash, false); err == nil {
 		t.Error("duplicate should be rejected")
+	}
+}
+
+// Regression: a hash-seeded user has NULL full_name and email columns. The
+// row scanner must tolerate those NULLs; if it doesn't, VerifyPassword
+// succeeds the bcrypt check but then returns a Scan error and the login
+// surfaces as 401 "invalid credentials". See seed-on-first-run path.
+func TestStore_HashSeededUser_LoginAndScan(t *testing.T) {
+	s := newTestStore(t)
+	ctx := context.Background()
+	password := "SeedPassword123!"
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		t.Fatalf("GenerateFromPassword: %v", err)
+	}
+	if err := s.CreateUserWithHash(ctx, "seeded", string(hashBytes), true); err != nil {
+		t.Fatalf("CreateUserWithHash: %v", err)
+	}
+	u, err := s.GetUser(ctx, "seeded")
+	if err != nil {
+		t.Fatalf("GetUser: %v", err)
+	}
+	if u.FullName != "" || u.Email != "" {
+		t.Errorf("expected empty FullName/Email, got %q/%q", u.FullName, u.Email)
+	}
+	u, err = s.VerifyPassword(ctx, "seeded", password, LockoutConfig{MaxFailedAttempts: 5})
+	if err != nil {
+		t.Fatalf("VerifyPassword: %v", err)
+	}
+	if u.Username != "seeded" || !u.IsSuperuser {
+		t.Errorf("user = %+v", u)
 	}
 }
 

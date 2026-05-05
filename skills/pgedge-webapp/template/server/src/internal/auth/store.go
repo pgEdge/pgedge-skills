@@ -209,8 +209,9 @@ type rowScanner interface{ Scan(...any) error }
 
 func scanUser(r rowScanner) (*User, error) {
 	var u User
+	var fullName, email sql.NullString
 	var locked sql.NullTime
-	err := r.Scan(&u.ID, &u.Username, &u.FullName, &u.Email,
+	err := r.Scan(&u.ID, &u.Username, &fullName, &email,
 		&u.IsSuperuser, &u.Enabled, &u.FailedLoginCount, &locked,
 		&u.CreatedAt, &u.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -219,6 +220,8 @@ func scanUser(r rowScanner) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+	u.FullName = fullName.String
+	u.Email = email.String
 	if locked.Valid {
 		u.LockedUntil = &locked.Time
 	}
@@ -354,9 +357,14 @@ func (s *Store) DeleteSession(ctx context.Context, token string) error {
 }
 
 // DeleteExpiredSessions removes expired rows; returns count.
+//
+// Uses a parameterized time.Now() rather than SQL CURRENT_TIMESTAMP because
+// modernc.org/sqlite serializes time.Time values with timezone offsets, while
+// CURRENT_TIMESTAMP returns naive UTC; lexicographic comparison between the
+// two formats is unsafe.
 func (s *Store) DeleteExpiredSessions(ctx context.Context) (int, error) {
 	res, err := s.db.ExecContext(ctx,
-		`DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP`)
+		`DELETE FROM sessions WHERE expires_at <= ?`, time.Now())
 	if err != nil {
 		return 0, err
 	}
