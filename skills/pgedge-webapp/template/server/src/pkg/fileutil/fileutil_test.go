@@ -54,3 +54,36 @@ func TestFileExists(t *testing.T) {
 		t.Fatal("present file reports as missing")
 	}
 }
+
+// TestGetDefaultConfigPath_UserConfigDirFallback exercises the branch where
+// XDG_CONFIG_HOME is set but has no matching file, and the file exists under
+// os.UserConfigDir() instead.
+func TestGetDefaultConfigPath_UserConfigDirFallback(t *testing.T) {
+	// Point XDG_CONFIG_HOME at an empty temp dir so that branch is entered
+	// but no file is found there.
+	xdgTmp := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", xdgTmp)
+
+	// Discover the real UserConfigDir and plant the file there.
+	userDir, err := os.UserConfigDir()
+	if err != nil {
+		t.Skip("os.UserConfigDir() unavailable:", err)
+	}
+	targetDir := filepath.Join(userDir, "pgedge")
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	configFile := filepath.Join(targetDir, "<BINARY_NAME>-fallback-test.yaml")
+	if err := os.WriteFile(configFile, []byte("http: {}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(configFile) })
+
+	got, source := GetDefaultConfigPath("<BINARY_NAME>-fallback-test.yaml")
+	if got != configFile {
+		t.Errorf("path = %q, want %q", got, configFile)
+	}
+	if source != SourceUser {
+		t.Errorf("source = %q, want %q", source, SourceUser)
+	}
+}
