@@ -1,5 +1,9 @@
 # <PROJECT_NAME>
 
+[![CI - Server](https://github.com/<GITHUB_REPO>/actions/workflows/ci-server.yml/badge.svg)](https://github.com/<GITHUB_REPO>/actions/workflows/ci-server.yml)
+[![CI - Client](https://github.com/<GITHUB_REPO>/actions/workflows/ci-client.yml/badge.svg)](https://github.com/<GITHUB_REPO>/actions/workflows/ci-client.yml)
+[![CI - Docs](https://github.com/<GITHUB_REPO>/actions/workflows/ci-docs.yml/badge.svg)](https://github.com/<GITHUB_REPO>/actions/workflows/ci-docs.yml)
+
 Scaffolded by the `pgedge-webapp` skill. Run `pgedge-docs` to generate
 proper user-facing documentation.
 

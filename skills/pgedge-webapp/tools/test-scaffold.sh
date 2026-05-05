@@ -26,6 +26,7 @@ MODULE_PATH="github.com/example/harness"
 HTTP_PORT="8080"
 CURRENT_YEAR="$(date +%Y)"
 COOKIE_NAME="${BINARY_GO_IDENT}_session"
+GITHUB_REPO="example/${PROJECT_SLUG}"
 ADMIN_PASSWORD="TestAdminPassword123!"
 
 # Tempdir under the OS tempdir so artifacts auto-clean
@@ -51,6 +52,7 @@ MODULE_PATH="$MODULE_PATH" \
 HTTP_PORT="$HTTP_PORT" \
 CURRENT_YEAR="$CURRENT_YEAR" \
 COOKIE_NAME="$COOKIE_NAME" \
+GITHUB_REPO="$GITHUB_REPO" \
 python3 - "$TARGET" <<'PYEOF'
 import os, sys, pathlib
 target = pathlib.Path(sys.argv[1])
@@ -63,6 +65,7 @@ subs = {
     "<HTTP_PORT>":        os.environ["HTTP_PORT"],
     "<CURRENT_YEAR>":     os.environ["CURRENT_YEAR"],
     "<COOKIE_NAME>":      os.environ["COOKIE_NAME"],
+    "<GITHUB_REPO>":      os.environ["GITHUB_REPO"],
 }
 binary_extensions = {".png", ".ico", ".jpg", ".jpeg", ".gif"}
 for path in target.rglob("*"):

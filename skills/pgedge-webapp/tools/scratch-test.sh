@@ -44,6 +44,7 @@ subs = {
     "<PROJECT_NAME>":    "Scratch App",
     "<PROJECT_SLUG>":    "scratch-app",
     "<CURRENT_YEAR>":    "2026",
+    "<GITHUB_REPO>":     "example/scratch-app",
 }
 binary_extensions = {".png", ".ico", ".jpg", ".jpeg", ".gif"}
 for path in target.rglob("*"):

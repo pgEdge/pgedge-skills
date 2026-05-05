@@ -16,6 +16,9 @@ separately.
 - `<CURRENT_YEAR>` — four-digit year for copyright lines.
 - `<COOKIE_NAME>` — session cookie name; derived from
   `<BINARY_GO_IDENT>` + `_session`.
+- `<GITHUB_REPO>` — `org/repo` slug for GitHub Actions badge URLs in
+  `README.md`. Typically derived from the user-supplied module path
+  (`github.com/org/repo` → `org/repo`).
 - `<SEEDED_ADMIN_PASSWORD_HASH>` — bcrypt hash of the admin password,
   generated at scaffold time by `tools/genhash`.
 

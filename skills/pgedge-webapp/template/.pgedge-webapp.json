@@ -4,6 +4,7 @@
     "project_slug": "<PROJECT_SLUG>",
     "binary_name": "<BINARY_NAME>",
     "module_path": "<MODULE_PATH>",
+    "github_repo": "<GITHUB_REPO>",
     "http_port": "<HTTP_PORT>",
     "ellie_wired": false
 }

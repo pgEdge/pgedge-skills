@@ -33,9 +33,13 @@ parentheses.
 3. Project slug — kebab-case, must match `^[a-z][a-z0-9-]*$`.
 4. Binary name — kebab-case (e.g., `my-app-server`).
 5. Go module path — must contain at least one `/`.
-6. HTTP listen port — integer in 1024–65535 (default 8080).
-7. Initial admin password — at least 12 characters, prompted not echoed.
-8. Include Ellie chat panel? (default no.)
+6. GitHub repo (`org/repo` slug used in the README's CI badge URLs).
+   When the module path starts with `github.com/`, default to the next
+   two path segments (e.g. `github.com/pgEdge/foo/server/src` →
+   `pgEdge/foo`); otherwise prompt.
+7. HTTP listen port — integer in 1024–65535 (default 8080).
+8. Initial admin password — at least 12 characters, prompted not echoed.
+9. Include Ellie chat panel? (default no.)
 
 ### Setting Up a New Project
 
@@ -194,8 +198,19 @@ Hard rules:
 
 ## CI Requirements
 
-The template ships with `.github/workflows/ci-client.yml` (Node 22 + 24
-matrix) and `.github/workflows/ci-server.yml` (Go 1.26).
+The template ships with three GitHub Actions workflows:
+
+- `.github/workflows/ci-server.yml` — Go 1.26: `go mod verify`, vet,
+  gofmt, golangci-lint, build, coverage gate.
+- `.github/workflows/ci-client.yml` — Node 22 + 24 matrix:
+  typecheck, lint, test:coverage.
+- `.github/workflows/ci-docs.yml` — `mkdocs build --strict` with
+  mkdocs-material + mkdocs-redoc-tag. Requires the project's docs site
+  to be scaffolded by `pgedge-docs`; skips silently when no
+  `docs/**` paths changed.
+
+The template `README.md` carries badges for all three. Substitute
+`<GITHUB_REPO>` so the URLs resolve.
 Both run lint, vet/typecheck, build, and the coverage gate. Coverage
 artifacts are uploaded from the latest version of each runtime.
 
