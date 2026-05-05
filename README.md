@@ -73,7 +73,7 @@ databases via `psql`. You can also invoke it explicitly:
 /pgedge-skills:pgedge-psql
 ```
 
-### pgedge-webapp
+### pgedge-webapp (beta)
 
 Full-stack web app scaffolding skill that:
 
