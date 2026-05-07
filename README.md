@@ -57,7 +57,7 @@ count. Add it to the existing monitoring page and update the
 changelog.
 ```
 
-### pgedge-repo-ready
+### [pgedge-repo-ready](skills/pgedge-repo-ready/README.md)
 
 Repository audit and remediation skill that:
 
