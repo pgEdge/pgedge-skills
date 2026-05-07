@@ -3,7 +3,7 @@
 {
 	"name": "pgEdge Skills",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/go:2-1.25-trixie",
+	"image": "mcr.microsoft.com/devcontainers/go:2-1.26-trixie",
 	"features": {
 		"ghcr.io/devcontainers/features/github-cli:1": {
 			"installDirectlyFromGitHubRelease": true,
@@ -28,10 +28,9 @@
         ],
         "initializeCommand": "export GH_TOKEN=$(gh auth token 2>/dev/null)",
         "containerEnv": {
-            "GH_TOKEN": "${localEnv:GH_TOKEN}",
-            "DISABLE_AUTOUPDATER": "1"
+            "GH_TOKEN": "${localEnv:GH_TOKEN}"
         },
-        "postCreateCommand": "mkdir -p ~/.claude && ln -sf ~/.claude-host/commands ~/.claude/commands && ln -sf ~/.claude-host/settings.json ~/.claude/settings.json && echo 'alias claude=\"claude --dangerously-skip-permissions\"' >> ~/.bashrc && curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o /tmp/get-helm-3.sh && bash /tmp/get-helm-3.sh && rm /tmp/get-helm-3.sh"
+        "postCreateCommand": "mkdir -p ~/.claude && ln -sf ~/.claude-host/commands ~/.claude/commands && ln -sf ~/.claude-host/settings.json ~/.claude/settings.json && echo 'alias claude=\"claude --dangerously-skip-permissions\"' >> ~/.bashrc && sudo env \"PATH=$PATH\" npm update -g @anthropic-ai/claude-code && curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o /tmp/get-helm-3.sh && bash /tmp/get-helm-3.sh && rm /tmp/get-helm-3.sh"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
