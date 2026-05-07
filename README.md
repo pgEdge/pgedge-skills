@@ -98,6 +98,47 @@ project. Invoke explicitly with:
 Scaffold a new pgEdge web app at ~/git/my-app called "My App".
 ```
 
+### pgedge-compactor
+
+Skill-file compactor that:
+
+- classifies content blocks as routing, priming, examples, tables,
+  cross-routing, or frontmatter.
+- compresses only routing blocks while preserving all
+  quality-critical content.
+- converts parallel prose into tables where applicable, including
+  the legend technique for repeated values.
+- supports single file, directory (two-pass resolution), and glob
+  targets.
+
+The skill activates automatically when you ask to compact or
+optimize a skill file. You can also invoke it explicitly:
+
+```
+/pgedge-skills:pgedge-compactor
+```
+
+#### Example Prompts
+
+**Compacting a single skill file:**
+
+```
+Compact the pgedge-docs SKILL.md to reduce token usage.
+```
+
+**Compacting all skills in a directory:**
+
+```
+Compact all skill files in the skills/ directory.
+```
+
+**Reviewing compaction potential:**
+
+```
+How much could we compress the pgedge-webapp skill? Show me
+what's routing vs priming.
+```
+
 ## Support & Resources
 
 For more information, visit
