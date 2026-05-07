@@ -358,6 +358,92 @@ Using the upstream image in CI defeats the purpose of testing
 against pgEdge's distribution. The CI image should match the
 Docker Compose image (P-06).
 
+### G-09: .gitignore
+
+If `.gitignore` is MISSING, create it. If PARTIAL (exists
+but missing key patterns), append the missing entries. Never
+remove existing entries.
+
+Start with the base patterns that apply to every repo:
+
+```gitignore
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Secrets
+.env
+.env.local
+.env.*.local
+*.password
+
+# Claude
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Audit artifacts
+REPO_READY_AUDIT.md
+NOTICE.txt
+```
+
+Then add language-specific patterns based on detection:
+
+**Go detected:**
+
+```gitignore
+# Go
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+go.work
+```
+
+**Python detected:**
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+```
+
+**TypeScript/Node detected:**
+
+```gitignore
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+```
+
+**Docker detected:**
+
+```gitignore
+# Docker data
+data/
+```
+
+When appending to an existing file, add a blank line before
+the new section. Do not duplicate patterns already present.
+
 ### X-09: .devcontainer
 
 Generate `.devcontainer/devcontainer.json` from detected

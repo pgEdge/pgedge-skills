@@ -147,8 +147,14 @@ grep -q "\.claude" .gitignore 2>/dev/null \
   && echo "HAS_CLAUDE" || echo "NO_CLAUDE"
 grep -q "\.env" .gitignore 2>/dev/null \
   && echo "HAS_ENV" || echo "NO_ENV"
-# PASS if covers IDE, build, secrets, .claude/; PARTIAL if
-# exists but missing key patterns
+grep -q "\.idea\|\.vscode" .gitignore 2>/dev/null \
+  && echo "HAS_IDE" || echo "NO_IDE"
+grep -q "bin/\|dist/\|build/" .gitignore 2>/dev/null \
+  && echo "HAS_BUILD" || echo "NO_BUILD"
+grep -q "CLAUDE\.local\.md" .gitignore 2>/dev/null \
+  && echo "HAS_CLAUDE_LOCAL" || echo "NO_CLAUDE_LOCAL"
+# PASS if all five present; PARTIAL if exists but missing
+# any key pattern
 ```
 
 ### Code Quality Checks (Tier 2)
