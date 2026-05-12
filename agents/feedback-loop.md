@@ -42,4 +42,60 @@ doc), the §2.9 issue-lifecycle rule, and the
 final report; bias toward fixing over arguing; treat all
 three caller skills (fix-issue, monitor-actions, review-pr)
 with identical loop semantics.
+
+## Invocation
+
+Callers dispatch via the Agent tool:
+
+````
+Agent({
+  subagent_type: "feedback-loop",
+  prompt: "<key:value, key:value, ...>"
+})
+````
+
+The dispatcher prompt is plain prose key:value pairs.
+
+### Inputs
+
+| Field | Type | Required | Default | Notes |
+|-------|------|----------|---------|-------|
+| `pr` | int or URL | one-of pr/branch | — | PR number or full URL. Enables both halves. |
+| `branch` | string | one-of pr/branch | — | Branch name. CI half only; threads auto-disabled. |
+| `repo` | owner/name | no | from cwd | Falls back to `gh repo view --json nameWithOwner -q .nameWithOwner`. |
+| `watch_ci` | bool | no | true | Watch CI checks/runs and fix failures. |
+| `watch_threads` | bool | no | true (pr mode), false (branch mode) | Forced false in branch mode. |
+| `cool_down_seconds` | int | no | 120 | Sleep after each push. |
+| `max_iterations` | int | no | 10 | Overall ceiling. |
+| `worktree_path` | path | no | create one | Use caller's existing worktree, or create via superpowers:using-git-worktrees. |
+
+### Validation (run at dispatch, before any iteration)
+
+Exit with `status: error, reason: validation_error` if any of:
+
+- Both `pr` and `branch` are set, OR neither is set.
+- `pr` is set but does not resolve to an OPEN PR:
+  ```bash
+  state=$(gh pr view "$pr" --json state -q .state)
+  [ "$state" = "OPEN" ] || exit_validation_error
+  ```
+- `branch` is set AND `watch_threads=true` was explicitly
+  passed.
+- `watch_ci=false` AND `watch_threads=false` (nothing to do).
+
+### Dispatch examples
+
+```
+# fix-issue:
+prompt: "pr: 42, watch_ci: true, watch_threads: true"
+
+# monitor-actions on a PR:
+prompt: "pr: 42, watch_ci: true, watch_threads: false"
+
+# monitor-actions on a non-PR branch:
+prompt: "branch: main, watch_ci: true"
+
+# review-pr fix mode:
+prompt: "pr: 42, watch_ci: true, watch_threads: true, worktree_path: /path/from/caller"
+```
 <!-- BODY-END -->
