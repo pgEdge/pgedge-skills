@@ -114,4 +114,81 @@ prompt: "pr: 42, watch_ci: true, watch_threads: true, worktree_path: /path/from/
 - Record the resolved worktree path; include in the final
   report.
 - Do NOT modify files outside this worktree.
+
+## Loop iteration
+
+Each iteration runs the steps below in order. Maintain
+in-memory state across iterations:
+- `attempt_count: {signature → int}` — for repeat tracking.
+- `path_b_threads: [(thread_url, explanation)]` — for the
+  final report.
+- `iteration: int` — for the `max_iterations` check.
+
+### Step A — Fetch state
+
+**If `watch_ci`:**
+
+- **PR mode:**
+  ```bash
+  gh pr checks "$pr"
+  gh pr view "$pr" --json statusCheckRollup
+  ```
+  Parse out checks with `conclusion: failure` or
+  `status: in_progress`.
+
+- **Branch mode:**
+  ```bash
+  gh run list --branch "$branch" --limit 10 --json databaseId,name,status,conclusion
+  ```
+  Filter to runs with `conclusion: failure` or
+  `status: in_progress`.
+
+**If `watch_threads` (PR mode only):**
+
+Fetch review threads:
+```bash
+gh api graphql -f query='
+{
+  repository(owner: "<owner>", name: "<repo>") {
+    pullRequest(number: <pr_number>) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          comments(first: 20) {
+            nodes {
+              author { login }
+              body
+              path
+              line
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+Filter to `isResolved: false`.
+
+Fetch issue-level comments (CodeRabbit posts a sticky
+summary here):
+```bash
+gh api "repos/<owner>/<repo>/issues/<pr>/comments"
+```
+
+### Step B — Categorise
+
+**CI failures:** signature = `<check_name> :: <first_error_line_truncated_to_200_chars>`.
+Group by signature.
+
+**Threads:** by author login —
+- `coderabbitai*` → CodeRabbit
+- `codacy-*` → Codacy
+- other with `[bot]` suffix → other bots (informational
+  unless they surface a real problem)
+- everyone else → human reviewer
 <!-- BODY-END -->
