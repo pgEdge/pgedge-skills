@@ -355,4 +355,30 @@ After committing and pushing, before sleeping:
 - Otherwise, skip the sleep (next iteration re-polls
   immediately to check externally-changed state).
 - Increment `iteration`. Return to Step A.
+
+## Hard stops
+
+Exit with `status: hard_stop` and the relevant `reason` if
+any of:
+
+| Reason | Trigger |
+|--------|---------|
+| `same_ci_failure_3x` | One CI signature seen ≥3 iterations |
+| `same_thread_circular` | One thread received ≥3 replies without resolving |
+| `scope_change` | Reviewer demanded work outside the original issue's scope (judgment call; populate `hard_stop_explanation`) |
+| `missing_credentials` | `gh` returned an auth error mid-loop |
+| `missing_context` | A fix needs access the subagent doesn't have (infra creds, prod data, etc.; populate `hard_stop_explanation`) |
+| `max_iterations` | `max_iterations` ceiling hit without clean exit |
+| `external_push` | Branch head changed externally during loop |
+| `pr_closed` | PR was closed or merged externally |
+| `validation_error` | Caught at dispatch validation (Task 4) |
+
+For `scope_change` and `missing_context`, the
+`hard_stop_explanation` field is mandatory — the caller
+needs to verify the judgment.
+
+**All-Path-B clean exit is NOT a hard stop.** If every
+unresolved thread is in `path_b_threads` and CI is clean,
+exit `status: clean` with the Path-B threads listed for
+human review.
 <!-- BODY-END -->
