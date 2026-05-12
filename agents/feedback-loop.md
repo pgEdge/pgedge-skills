@@ -212,4 +212,70 @@ Compute `threads_clean`:
 
 **If `iteration >= max_iterations`** → exit
 `status: hard_stop, reason: max_iterations` (see §5).
+
+### Step D — Address CI failures
+
+For each failing CI signature where
+`attempt_count[signature] < 3`:
+
+1. Fetch the failing run's logs:
+   ```bash
+   gh run view "$run_id" --log-failed
+   ```
+2. Diagnose root cause. **Never** disable tests, use
+   `--no-verify`, or paper over the failure to make it pass.
+3. Fix in the worktree (do not commit yet — Step G handles
+   commits).
+4. Increment `attempt_count[signature]`.
+
+If any signature is already at `attempt_count >= 3` → hard
+stop `same_ci_failure_3x`.
+
+### Step E — Address review threads
+
+For each unresolved thread:
+
+**Path A — fix in code (default).** Apply
+`superpowers:receiving-code-review` discipline: verify the
+suggestion against the code; don't capitulate to weak
+feedback; don't argue with strong feedback. If the
+suggestion has any merit:
+
+1. Apply the change in the worktree.
+2. Record `(thread_node_id, "Fixed in <pending_sha>")` for
+   posting after commit in Step G.
+
+**Path B — push back (rare exception).** Only when the
+finding is genuinely wrong on the merits — wrong about the
+language, wrong about project conventions, scope creep,
+contradicts the original issue's acceptance criteria. In
+that case:
+
+1. Compose a non-defensive, one-paragraph explanation.
+2. Reply on the thread:
+   ```bash
+   gh api graphql -f query='
+   mutation($threadId: ID!, $body: String!) {
+     addPullRequestReviewThreadReply(input: {
+       pullRequestReviewThreadId: $threadId,
+       body: $body
+     }) { comment { id url } }
+   }' -f threadId="<thread_node_id>" -f body="<explanation>"
+   ```
+3. **Leave unresolved.** Add to `path_b_threads`.
+
+For top-level (non-thread) PR comments where Path B applies,
+use `gh pr comment "$pr" --body "<text>"` instead of the
+GraphQL mutation.
+
+**Circular-tracking:** if the same thread receives ≥3 Path A
+or Path B replies without resolving → hard stop
+`same_thread_circular`.
+
+**Judgment-driven hard stops** (apply during this step):
+- If a reviewer demands work outside the original issue's
+  scope → hard stop `scope_change` with explanation.
+- If a fix needs access the subagent doesn't have (infra
+  creds, prod data, secrets) → hard stop `missing_context`
+  with explanation.
 <!-- BODY-END -->
