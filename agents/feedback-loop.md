@@ -371,7 +371,13 @@ any of:
 | `max_iterations` | `max_iterations` ceiling hit without clean exit |
 | `external_push` | Branch head changed externally during loop |
 | `pr_closed` | PR was closed or merged externally |
-| `validation_error` | Caught at dispatch validation (Task 4) |
+| `validation_error` | Caught at dispatch validation (see Invocation → Validation) |
+
+**Note on `validation_error`:** This is the one row above that
+exits with `status: error`, not `status: hard_stop` — it's
+caught at dispatch (see Invocation → Validation) before any
+iteration starts, so it never reaches the loop body. The other
+8 reasons exit with `status: hard_stop`.
 
 For `scope_change` and `missing_context`, the
 `hard_stop_explanation` field is mandatory — the caller
