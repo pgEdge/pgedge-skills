@@ -191,4 +191,25 @@ Group by signature.
 - other with `[bot]` suffix → other bots (informational
   unless they surface a real problem)
 - everyone else → human reviewer
+
+### Step C — Check exit conditions
+
+Compute `ci_clean`:
+- If `!watch_ci` → ci_clean = true (not our problem).
+- Else: every required check has `conclusion: success`
+  (no failures, no pending). Non-required checks may fail
+  without blocking — they're reported in the final output
+  but don't gate exit.
+
+Compute `threads_clean`:
+- If `!watch_threads` → threads_clean = true.
+- Else: every unresolved thread is either now resolved by
+  this iteration's actions OR is in `path_b_threads`
+  (intentionally left for human review).
+
+**If both clean** → exit `status: clean` (see Step I).
+**Else** → continue to Step D.
+
+**If `iteration >= max_iterations`** → exit
+`status: hard_stop, reason: max_iterations` (see §5).
 <!-- BODY-END -->
