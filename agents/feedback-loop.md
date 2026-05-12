@@ -98,4 +98,20 @@ prompt: "branch: main, watch_ci: true"
 # review-pr fix mode:
 prompt: "pr: 42, watch_ci: true, watch_threads: true, worktree_path: /path/from/caller"
 ```
+
+## Worktree setup
+
+- If `worktree_path` was passed AND the path exists AND
+  `git -C <path> status` succeeds → use it as the working
+  directory for all subsequent commits.
+- Otherwise, invoke `superpowers:using-git-worktrees` to
+  create an isolated worktree on the PR's head branch
+  (PR mode) or the specified branch (branch mode):
+  ```bash
+  branch_name=$(gh pr view "$pr" --json headRefName -q .headRefName)
+  # Then use the using-git-worktrees skill to create a worktree on $branch_name
+  ```
+- Record the resolved worktree path; include in the final
+  report.
+- Do NOT modify files outside this worktree.
 <!-- BODY-END -->
