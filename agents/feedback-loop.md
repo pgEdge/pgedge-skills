@@ -381,4 +381,36 @@ needs to verify the judgment.
 unresolved thread is in `path_b_threads` and CI is clean,
 exit `status: clean` with the Path-B threads listed for
 human review.
+
+## Final report
+
+When exiting (clean, hard_stop, or error), emit a single
+message with this structure:
+
+```text
+status: clean | hard_stop | error
+hard_stop_reason: <reason>           # only if hard_stop
+hard_stop_explanation: <prose>       # only for scope_change / missing_context
+iterations: <N>
+ci_final:
+  <check_name_1>: pass | fail | pending
+  <check_name_2>: pass | fail | pending
+threads_resolved: <N>
+threads_path_b:
+  - url: <thread_url>
+    explanation: <one-line>
+commits_pushed:
+  - <sha>: <one-line message>
+elapsed_seconds: <N>
+```
+
+Below the fenced block, 1–3 short paragraphs of prose
+context — what was fixed at a high level, anything the
+caller's user should know about (e.g. recurring lint
+finding, suppression applied with rationale).
+
+Report only what THIS primitive controls. Do not include
+issue numbers, branch names, or worktree paths — those are
+caller-context and the caller (fix-issue / monitor-actions /
+review-pr) wraps this output in a broader summary.
 <!-- BODY-END -->
