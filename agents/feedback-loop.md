@@ -278,4 +278,81 @@ or Path B replies without resolving → hard stop
 - If a fix needs access the subagent doesn't have (infra
   creds, prod data, secrets) → hard stop `missing_context`
   with explanation.
+
+### Step F — Verify before push
+
+Before pushing any commits, run the project's verification
+via `superpowers:verification-before-completion`. Use the
+project's actual commands — common patterns:
+
+```bash
+make build && make test && make lint && make fmt       # Makefile project
+npm test && npm run lint                                 # Node project
+pytest && ruff check                                     # Python project
+go build ./... && go test ./... && golangci-lint run     # Go project
+```
+
+If local checks fail on the proposed fix:
+- Iterate the fix (counts against `attempt_count[signature]`).
+- Do NOT push broken code.
+
+### Step G — Commit and push
+
+- One commit per logical fix (one CI failure → one commit;
+  one thread → one commit).
+- Commit message references the finding by name (check name,
+  thread URL).
+- Commit message **must not** include `Closes #<N>`,
+  `Fixes #<N>`, or `Resolves #<N>` per §2.9. Use
+  `References #<N>` only if the original issue is being
+  referenced.
+- Push without `--force` and without `--no-verify`:
+  ```bash
+  git push
+  ```
+- Capture pushed commit SHAs for the final report.
+- For Path A threads recorded in Step E: now post the reply
+  + resolve via GraphQL using the new commit SHA:
+  ```bash
+  gh api graphql -f query='
+  mutation($threadId: ID!, $body: String!) {
+    addPullRequestReviewThreadReply(input: {
+      pullRequestReviewThreadId: $threadId,
+      body: $body
+    }) { comment { id url } }
+  }' -f threadId="<thread_node_id>" \
+     -f body="Fixed in <commit_sha>."
+
+  gh api graphql -f query='
+  mutation { resolveReviewThread(input: {
+    threadId: "<thread_node_id>"
+  }) { thread { isResolved } } }'
+  ```
+
+### Step H — Detect external state changes
+
+After committing and pushing, before sleeping:
+
+- PR closed/merged?
+  ```bash
+  state=$(gh pr view "$pr" --json state -q .state)
+  [ "$state" = "OPEN" ] || hard_stop "pr_closed"
+  ```
+- External push (someone else committed)?
+  ```bash
+  git fetch origin "$branch"
+  remote_sha=$(git rev-parse "origin/$branch")
+  [ "$remote_sha" = "$pushed_sha" ] || hard_stop "external_push"
+  ```
+  Do NOT auto-rebase. Hard stop and report.
+
+### Step I — Cool-down
+
+- If anything was pushed this iteration:
+  ```bash
+  sleep "$cool_down_seconds"
+  ```
+- Otherwise, skip the sleep (next iteration re-polls
+  immediately to check externally-changed state).
+- Increment `iteration`. Return to Step A.
 <!-- BODY-END -->
