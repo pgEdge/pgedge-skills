@@ -1,0 +1,37 @@
+name: CI - Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/ci-docs.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/ci-docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install mkdocs-material
+
+      - name: Build docs
+        run: mkdocs build --strict

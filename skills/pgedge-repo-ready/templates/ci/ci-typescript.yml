@@ -1,0 +1,56 @@
+name: CI - Client
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "client/**"
+      - ".github/workflows/ci-client.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "client/**"
+      - ".github/workflows/ci-client.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [<NODE_VERSION>]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test with coverage
+        run: npm test -- --coverage --coverage.thresholds.lines=90
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build-node-${{ matrix.node }}
+          path: dist/
+          retention-days: 7
