@@ -57,6 +57,47 @@ count. Add it to the existing monitoring page and update the
 changelog.
 ```
 
+### [pgedge-repo-ready](skills/pgedge-repo-ready/README.md)
+
+Repository audit and remediation skill that:
+
+- audits repos against 51 pgEdge engineering standards across
+  6 tiers (governance, code quality, docs, developer experience,
+  language-specific, Postgres).
+- detects languages (Go, Python, TypeScript), project type, and
+  Postgres usage to determine which checks apply.
+- applies 35 bundled templates and generates detection-driven
+  fixes for CI, linting, documentation, and devcontainer setup.
+- generates CLAUDE.md via structured interview if missing.
+- is idempotent — re-run to detect drift or regressions.
+
+The skill activates when you mention repo readiness, standards,
+or release preparation. Invoke explicitly with:
+
+```
+/pgedge-skills:pgedge-repo-ready
+```
+
+#### Example Prompts
+
+**Full audit and remediation:**
+
+```
+Audit this repo against pgEdge standards and fix everything.
+```
+
+**Audit only (no changes):**
+
+```
+Is this repo ready for public release?
+```
+
+**Targeted fix:**
+
+```
+Bring just the CI and governance up to pgEdge standards.
+```
+
 ### pgedge-psql (beta)
 
 PostgreSQL `psql` skill that:
