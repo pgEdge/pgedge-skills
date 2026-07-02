@@ -1,0 +1,51 @@
+# Permissive markdownlint baseline for pgedge-skills.
+#
+# This repo is a plugin marketplace of skills. Skill-authored markdown
+# (SKILL.md, references, knowledge-base) is dense and NOT prose: wide
+# tables, YAML frontmatter, reused headings, long unwrapped lines. We
+# lint for well-formedness, NOT stylistic width — markdownlint does not
+# police character width anywhere (MD013 off). Template payload under
+# skills/**/template/** is excluded at the CI-glob level; it follows the
+# destination project's conventions, enforced downstream.
+
+# Line length — we do not enforce character width anywhere
+MD013: false
+# First-line heading — SKILL.md files start with YAML frontmatter
+MD041: false
+# Multiple top-level headings — reference fragments reuse H1
+MD025: false
+# Duplicate headings — section names repeat across reference files
+MD024: false
+# Inline HTML — used in skill content and doc templates
+MD033: false
+# Emphasis as heading — used as visual separators
+MD036: false
+# Fenced code language — grandfathered off (existing fences vary)
+MD040: false
+# Blanks around fences / headings / lists — dense content omits them
+MD031: false
+MD022: false
+MD032: false
+# Table pipe spacing — compact pipe tables
+MD060: false
+# Bare URLs — appear in reference/attribution content
+MD034: false
+# Multiple blank lines — used as visual separators
+MD012: false
+# Trailing spaces — alignment in some content
+MD009: false
+# Ordered list prefix — intentional non-sequential numbering
+MD029: false
+# Blank line in blockquote
+MD028: false
+# Spaces in emphasis / code span markers — appear in reference content
+MD037: false
+MD038: false
+# Unordered list style — mixed - and *
+MD004: false
+# Heading increment — reference files skip levels
+MD001: false
+# Reference link labels — some tables use undefined labels
+MD052: false
+# Single trailing newline — some generated files lack it
+MD047: false
