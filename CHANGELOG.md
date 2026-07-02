@@ -11,8 +11,9 @@ project adheres to semantic versioning.
 - Automated release pipeline: a push to `main` that bumps the plugin
   version builds per-skill zips and publishes a GitHub Release, gated on
   lint (`.github/workflows/ci.yml`, `scripts/build-skill-zips.sh`).
-- Layered markdownlint config: a permissive skill baseline plus a strict
-  pgEdge house-style override for the pgedge-docs exemplar docs.
+- Permissive markdownlint baseline (`.markdownlint.yaml`) that checks
+  well-formedness, not line width; template payload
+  (`skills/**/template/**`) is excluded from lint.
 - Root `CLAUDE.md` documenting repo context and the release flow.
 
 ### Changed
