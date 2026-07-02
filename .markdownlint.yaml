@@ -49,3 +49,8 @@ MD001: false
 MD052: false
 # Single trailing newline — some generated files lack it
 MD047: false
+# Hard tabs — allowed inside fenced code blocks (Makefile targets and
+# Go examples in skill/template docs require literal tabs); still flagged
+# in prose
+MD010:
+  code_blocks: false
