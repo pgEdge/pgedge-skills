@@ -1,2 +1,5 @@
 /.claude
 .devcontainer/devcontainer-lock.json
+docs/superpowers/
+.DS_Store
+dist/

@@ -1,0 +1,165 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+permissions:
+    contents: write
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: markdownlint
+              uses: DavidAnson/markdownlint-cli2-action@v19
+              with:
+                  globs: |
+                      skills/**/*.md
+                      docs/**/*.md
+                      README.md
+                      CHANGELOG.md
+                      CLAUDE.md
+                      !skills/**/template/**
+                      !docs/superpowers/**
+
+            - name: No hardcoded absolute paths
+              run: |
+                  if grep -rn '/Users/' skills/ docs/ README.md \
+                      CLAUDE.md 2>/dev/null; then
+                      echo "::error::Found hardcoded absolute paths"
+                      exit 1
+                  fi
+
+            - name: Reference-file size cap (25 KB)
+              run: |
+                  OVERSIZED=$(find skills -name '*.md' \
+                      -not -name 'SKILL.md' \
+                      -path '*/references/*' -size +25k 2>/dev/null)
+                  if [ -n "$OVERSIZED" ]; then
+                      echo "::error::Reference files exceed 25KB:"
+                      echo "$OVERSIZED"
+                      exit 1
+                  fi
+
+            - name: Relative-path validation
+              run: |
+                  errors=0
+                  while IFS= read -r file; do
+                      dir=$(dirname "$file")
+                      while read -r ref; do
+                          target="$dir/$ref"
+                          if [ ! -f "$target" ]; then
+                              echo "::error file=$file::Broken path: $ref"
+                              errors=$((errors + 1))
+                          fi
+                      done < <(grep -oP '`(\.\./[^`]+\.md)`' "$file" \
+                          | tr -d '`')
+                  done < <(find skills docs -name '*.md')
+                  [ "$errors" -eq 0 ]
+
+    pr-discipline:
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Require version bump when skills change
+              run: |
+                  git fetch origin main --quiet
+                  PR_VERSION=$(jq -r '.version' \
+                      .claude-plugin/plugin.json)
+                  MAIN_VERSION=$(git show \
+                      origin/main:.claude-plugin/plugin.json \
+                      | jq -r '.version')
+                  SKILL_CHANGES=$(git diff --name-only \
+                      origin/main...HEAD -- skills/)
+                  if [ -n "$SKILL_CHANGES" ] \
+                      && [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
+                      echo "::error::skills/ changed but plugin.json version not bumped — users will not receive the update via /plugin. Bump the version."
+                      echo "Changed under skills/:"
+                      echo "$SKILL_CHANGES"
+                      exit 1
+                  fi
+                  echo "Version-bump check OK (skills changed: $([ -n "$SKILL_CHANGES" ] && echo yes || echo no); bumped: $([ "$PR_VERSION" != "$MAIN_VERSION" ] && echo yes || echo no))"
+
+            - name: Require CHANGELOG entry when version bumped
+              run: |
+                  git fetch origin main --quiet
+                  PR_VERSION=$(jq -r '.version' \
+                      .claude-plugin/plugin.json)
+                  MAIN_VERSION=$(git show \
+                      origin/main:.claude-plugin/plugin.json \
+                      | jq -r '.version')
+                  if [ "$PR_VERSION" != "$MAIN_VERSION" ] \
+                      && ! grep -Eq "^## \[$PR_VERSION\]" CHANGELOG.md; then
+                      echo "::error::Version bumped to $PR_VERSION but no CHANGELOG entry (expected a line matching ^## [$PR_VERSION])"
+                      exit 1
+                  fi
+                  echo "Changelog check OK"
+
+            - name: Build script produces one zip per skill
+              run: |
+                  ./scripts/build-skill-zips.sh
+                  SKILLS=$(find skills -maxdepth 1 -mindepth 1 -type d \
+                      -not -name shared | wc -l | xargs)
+                  ZIPS=$(ls dist/*.zip 2>/dev/null | wc -l | xargs)
+                  if [ "$SKILLS" != "$ZIPS" ]; then
+                      echo "::error::Expected $SKILLS zips, got $ZIPS"
+                      exit 1
+                  fi
+                  for z in dist/*.zip; do
+                      unzip -l "$z" | grep -q 'SKILL.md' \
+                          || { echo "::error::$z missing SKILL.md"; exit 1; }
+                  done
+                  echo "All $ZIPS skill zips valid"
+
+    release:
+        needs: [lint]
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Read version from plugin.json
+              id: version
+              run: |
+                  VERSION=$(jq -r '.version' \
+                      .claude-plugin/plugin.json)
+                  if [[ "$VERSION" == "null" || -z "$VERSION" ]]; then
+                      echo "::error::No version in plugin.json"; exit 1
+                  fi
+                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+                  echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+            - name: Check if tag exists
+              id: check_tag
+              run: |
+                  if git ls-remote --tags origin \
+                      "refs/tags/${{ steps.version.outputs.tag }}" \
+                      | grep -q .; then
+                      echo "exists=true" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "exists=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Build skill zips
+              if: steps.check_tag.outputs.exists == 'false'
+              run: ./scripts/build-skill-zips.sh
+
+            - name: Create release
+              if: steps.check_tag.outputs.exists == 'false'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create \
+                      "${{ steps.version.outputs.tag }}" \
+                      dist/*.zip \
+                      --title "v${{ steps.version.outputs.version }}" \
+                      --generate-notes
