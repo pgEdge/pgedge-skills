@@ -70,29 +70,39 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Check version bump
-              continue-on-error: true
+            - name: Require version bump when skills change
               run: |
+                  git fetch origin main --quiet
                   PR_VERSION=$(jq -r '.version' \
                       .claude-plugin/plugin.json)
-                  git fetch origin main --quiet
                   MAIN_VERSION=$(git show \
                       origin/main:.claude-plugin/plugin.json \
                       | jq -r '.version')
-                  if [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
-                      echo "::warning::No version bump — no release on merge"
+                  SKILL_CHANGES=$(git diff --name-only \
+                      origin/main...HEAD -- skills/)
+                  if [ -n "$SKILL_CHANGES" ] \
+                      && [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
+                      echo "::error::skills/ changed but plugin.json version not bumped — users will not receive the update via /plugin. Bump the version."
+                      echo "Changed under skills/:"
+                      echo "$SKILL_CHANGES"
                       exit 1
                   fi
+                  echo "Version-bump check OK (skills changed: $([ -n "$SKILL_CHANGES" ] && echo yes || echo no); bumped: $([ "$PR_VERSION" != "$MAIN_VERSION" ] && echo yes || echo no))"
 
-            - name: Check changelog updated
-              continue-on-error: true
+            - name: Require CHANGELOG entry when version bumped
               run: |
+                  git fetch origin main --quiet
                   PR_VERSION=$(jq -r '.version' \
                       .claude-plugin/plugin.json)
-                  if ! grep -Eq "^## \[$PR_VERSION\]" CHANGELOG.md; then
-                      echo "::warning::No CHANGELOG entry for $PR_VERSION"
+                  MAIN_VERSION=$(git show \
+                      origin/main:.claude-plugin/plugin.json \
+                      | jq -r '.version')
+                  if [ "$PR_VERSION" != "$MAIN_VERSION" ] \
+                      && ! grep -Eq "^## \[$PR_VERSION\]" CHANGELOG.md; then
+                      echo "::error::Version bumped to $PR_VERSION but no CHANGELOG entry (expected a line matching ^## [$PR_VERSION])"
                       exit 1
                   fi
+                  echo "Changelog check OK"
 
             - name: Build script produces one zip per skill
               run: |
