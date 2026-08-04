@@ -28,10 +28,35 @@ Every repo, regardless of language or purpose.
 | G-03 | Issue templates | `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md` both present | `templates/github/ISSUE_TEMPLATE/` |
 | G-04 | PR template | `.github/PULL_REQUEST_TEMPLATE.md` with checklist | `templates/github/PULL_REQUEST_TEMPLATE.md` |
 | G-05 | Dependabot | `.github/dependabot.yml` configured for relevant ecosystems | `templates/github/dependabot.yml` |
-| G-06 | Security policy | `.github/SECURITY.md` with vulnerability reporting process | `templates/github/SECURITY.md` |
+| G-06 | Security policy | `SECURITY.md` at repo root, matching the approved pgEdge policy verbatim (see note below) | `templates/github/SECURITY.md` |
 | G-07 | Contributing guide | `CONTRIBUTING.md` at repo root | `templates/github/CONTRIBUTING.md` |
 | G-08 | README | `README.md` exists with project description, CI badge, and quickstart section | Manual (audit flags, user writes) |
 | G-09 | .gitignore | `.gitignore` covers IDE files (.idea/, .vscode/), build artifacts (bin/, dist/, build/), secrets (.env, *.password), and `.claude/` | Manual (audit flags gaps) |
+
+### G-06 and the organisation default
+
+The security policy content is approved and is not
+repository-specific. Ship `templates/github/SECURITY.md` unchanged —
+no placeholder substitution, no per-repo edits. It must not promise an
+acknowledgement window, a fix timeline, or a reporting route other
+than `security@pgedge.com`.
+
+GitHub serves `SECURITY.md` from the public `pgEdge/.github`
+repository as a default to every repository in the organisation that
+does not carry its own copy. A repository that is **not** a product —
+tooling, test harnesses, docs sites, this repo — therefore passes G-06
+on that default alone, and does not need its own file.
+
+Organisation defaults do not appear in a repository's file tree, git
+history, clones or release archives, and tooling that looks for the
+file in the repository itself — including OpenSSF Scorecard's
+security-policy check — will not see them. Product repositories, the
+ones a customer deploys and runs, still get their own copy at the
+root.
+
+A pre-existing `.github/SECURITY.md` overrides the organisation
+default and is not the approved location. Replace it with a root
+`SECURITY.md` rather than leaving both in place.
 
 ---
 

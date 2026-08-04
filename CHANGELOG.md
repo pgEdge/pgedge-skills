@@ -4,6 +4,25 @@ All notable changes to pgedge-skills are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to semantic versioning.
 
+## [1.2.7] - 2026-08-04
+
+### Changed
+
+- `pgedge-repo-ready` G-06 now issues the approved pgEdge security
+  policy. The shipped `SECURITY.md` template previously promised
+  acknowledgement within 48 hours and an estimated timeline for a fix,
+  neither of which is approved, so every onboarded repository published
+  a commitment pgEdge had not made. It now points reporters at
+  `security@pgedge.com` and the Vulnerability Disclosure Statement at
+  `docs.pgedge.com/security`, and states the approved five-business-day
+  acknowledgement.
+- G-06's location moved from `.github/SECURITY.md` to the repository
+  root, which is where tooling that checks for a security policy looks.
+  A repository that is not a product now passes G-06 on the
+  organisation-wide default in `pgEdge/.github` and needs no file of its
+  own; a pre-existing `.github/SECURITY.md` is reported as being in the
+  wrong location.
+
 ## [1.2.6] - 2026-07-07
 
 ### Added

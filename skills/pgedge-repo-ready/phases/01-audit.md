@@ -123,8 +123,15 @@ test -f .github/PULL_REQUEST_TEMPLATE.md \
 # G-05: Dependabot
 test -f .github/dependabot.yml && echo "PASS" || echo "MISSING"
 
-# G-06: Security policy
-test -f .github/SECURITY.md && echo "PASS" || echo "MISSING"
+# G-06: Security policy (repo root, not .github/)
+test -f SECURITY.md && echo "PASS" || echo "MISSING"
+# A pre-existing .github/SECURITY.md overrides the org default and
+# is not the approved location:
+test -f .github/SECURITY.md && echo "WRONG_LOCATION"
+# PASS if root SECURITY.md is present. MISSING is only a finding
+# for a product repo — a repo a customer deploys and runs. Other
+# repos are covered by the org default in pgEdge/.github and
+# report SKIP. WRONG_LOCATION is a finding either way.
 
 # G-07: Contributing guide
 test -f CONTRIBUTING.md && echo "PASS" || echo "MISSING"
