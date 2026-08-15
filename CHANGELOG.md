@@ -4,6 +4,16 @@ All notable changes to pgedge-skills are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to semantic versioning.
 
+## [1.2.8] - 2026-08-14
+
+### Added
+
+- `pgedge-plain-speak` skill: swaps jargon used as ordinary vocabulary
+  ("orthogonal to", "non-trivial", "the delta") for plain English,
+  while keeping technical terms that are the actual name for
+  something. Applies to code comments as well as prose, and does not
+  change the depth of an explanation.
+
 ## [1.2.7] - 2026-08-04
 
 ### Changed

@@ -182,6 +182,38 @@ How much could we compress the pgedge-webapp skill? Show me
 what's routing vs priming.
 ```
 
+### pgedge-plain-speak
+
+Plain-language skill that:
+
+- replaces jargon used as ordinary vocabulary with everyday words.
+- keeps technical terms that are the actual name for something, such
+  as race condition, deadlock, or memoization.
+- prefers the shorter everyday word wherever it means the same thing.
+- applies to code comments as well as prose.
+- changes the wording without changing the depth of an explanation.
+
+The skill activates when you ask for ordinary English instead of
+jargon-flavored phrasing. You can also invoke it explicitly:
+
+```
+/pgedge-skills:pgedge-plain-speak
+```
+
+#### Example Prompts
+
+**Asking for a plain explanation:**
+
+```
+Explain why this query is slow, in plain English.
+```
+
+**Cleaning up existing prose:**
+
+```
+Rewrite the comments in this file without the jargon.
+```
+
 ## Support & Resources
 
 For more information, visit
