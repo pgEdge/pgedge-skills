@@ -1,4 +1,5 @@
 ---
+name: pgedge-plain-speak
 description: Speak plainly. Use when the user wants ordinary English instead of jargon-flavored phrasing.
 ---
 
