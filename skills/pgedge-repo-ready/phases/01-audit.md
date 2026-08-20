@@ -128,10 +128,17 @@ test -f SECURITY.md && echo "PASS" || echo "MISSING"
 # A pre-existing .github/SECURITY.md overrides the org default and
 # is not the approved location:
 test -f .github/SECURITY.md && echo "WRONG_LOCATION"
-# PASS if root SECURITY.md is present. MISSING is only a finding
-# for a product repo — a repo a customer deploys and runs. Other
-# repos are covered by the org default in pgEdge/.github and
-# report SKIP. WRONG_LOCATION is a finding either way.
+# Whether MISSING is a finding depends on repo_type, an org custom
+# property. Read it, do not guess:
+gh api "repos/pgEdge/$REPO/properties/values" \
+  --jq '.[]? | select(.property_name=="repo_type") | .value'
+# PASS if root SECURITY.md is present. On MISSING:
+#   repo_type=product          -> finding, the repo needs its own file
+#   any other value            -> SKIP, the org default covers it
+#   empty, null or 404         -> UNCLASSIFIED, flag it and ask
+# UNCLASSIFIED is not a pass. Absence of "product" is not evidence
+# that a repo is not one; most of the org carries no value yet.
+# WRONG_LOCATION is a finding either way.
 
 # G-07: Contributing guide
 test -f CONTRIBUTING.md && echo "PASS" || echo "MISSING"

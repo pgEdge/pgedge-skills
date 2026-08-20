@@ -50,9 +50,27 @@ on that default alone, and does not need its own file.
 Organisation defaults do not appear in a repository's file tree, git
 history, clones or release archives, and tooling that looks for the
 file in the repository itself — including OpenSSF Scorecard's
-security-policy check — will not see them. Product repositories, the
-ones a customer deploys and runs, still get their own copy at the
-root.
+security-policy check — will not see them. Product repositories still
+get their own copy at the root.
+
+**"Product" is not a judgement call.** It is the org custom property
+`repo_type`, maintained on `github.com/orgs/pgEdge/repositories`:
+
+```
+gh api "repos/pgEdge/<repo>/properties/values" \
+  --jq '.[]? | select(.property_name=="repo_type") | .value'
+```
+
+Allowed values are `product`, `internal`, `demo`, `integration`,
+`marketing`, `docs` and `deprecated`. Only `product` requires an
+in-repo copy. Anything else passes on the organisation default.
+
+A repository with **no** value is `UNCLASSIFIED`, which is neither a
+pass nor a fail. Most of the organisation carries no value yet, so
+absence is not evidence that a repository is not a product. Report it
+and ask the repo owner to set the property rather than guessing from
+the repository's name or contents. Setting it is a one-time act that
+fixes the answer for every future audit.
 
 A pre-existing `.github/SECURITY.md` overrides the organisation
 default and is not the approved location. Replace it with a root
