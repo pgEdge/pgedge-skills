@@ -4,6 +4,21 @@ All notable changes to pgedge-skills are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to semantic versioning.
 
+## [1.2.8] - 2026-08-20
+
+### Changed
+
+- `pgedge-repo-ready` G-06 now decides whether a repository needs its
+  own `SECURITY.md` from the org custom property `repo_type`, rather
+  than from a reading of what the repository appears to be. Only
+  `repo_type=product` requires an in-repo copy; every other value
+  passes on the organisation default in `pgEdge/.github`. The audit
+  reads the property instead of inferring it.
+- A repository with no `repo_type` value now reports `UNCLASSIFIED`,
+  which is neither a pass nor a fail. Most of the organisation carries
+  no value yet, so absence is not evidence that a repository is not a
+  product. The audit flags it and asks the owner to set the property.
+
 ## [1.2.7] - 2026-08-04
 
 ### Changed
