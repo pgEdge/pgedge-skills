@@ -14,6 +14,11 @@ and tooling into a Claude Code session:
   the `psql` CLI.
 - `pgedge-webapp` (beta) — scaffold and build a pgEdge web application
   from a shipped template.
+- `pgedge-security-advisory` — investigate a reported vulnerability,
+  score it, and draft the assessment record, advisory, and CVE record.
+  Reads the live disclosure-process docs in
+  `~/PROJECTS/docs/security-advisories` rather than carrying a frozen
+  copy of the policy.
 
 `pgedge-compactor` arrives later via rebase and is not yet present on
 this branch — do not be surprised when it appears.

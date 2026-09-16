@@ -98,6 +98,50 @@ Is this repo ready for public release?
 Bring just the CI and governance up to pgEdge standards.
 ```
 
+### pgedge-security-advisory
+
+Vulnerability disclosure skill that:
+
+- takes a reported vulnerability — internal finding, disclosure email,
+  or external researcher/VDP report — from raw report to drafted
+  assessment record, advisory, and CVE JSON record.
+- independently verifies the vulnerable code in the actual product
+  repository rather than trusting the report's citations.
+- checks the latest tag of every currently-supported branch, not just
+  the newest release.
+- builds the CVSS vector metric by metric and asks rather than guesses
+  when a metric is genuinely ambiguous.
+- never files an advisory, requests a CVE identifier, or publishes —
+  it hands back a readiness checklist instead.
+
+It reads pgEdge's live disclosure-process documents on every run, so
+policy specifics such as the timing tables and the CVE determination
+tests are never a stale copy carried inside the skill.
+
+The skill activates when a vulnerability is reported or when you ask
+for an advisory, assessment record, or CVSS score. Invoke explicitly
+with:
+
+```
+/pgedge-skills:pgedge-security-advisory
+```
+
+#### Example Prompts
+
+**New report arrives:**
+
+```
+Here's a disclosure email from a researcher about one of our
+repositories. Investigate it and draft the advisory.
+```
+
+**Scoping an existing finding:**
+
+```
+Which supported branches of this product are affected by this bug,
+and what CVSS vector should it get?
+```
+
 ### pgedge-psql (beta)
 
 PostgreSQL `psql` skill that:
