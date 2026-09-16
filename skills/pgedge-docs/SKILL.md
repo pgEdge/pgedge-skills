@@ -9,6 +9,17 @@ This skill ensures all pgEdge documentation follows consistent style,
 formatting, and structural conventions. These rules apply across all
 pgEdge projects and repositories.
 
+## Review Guidance
+
+When you are editing a doc, use the superpower available 
+from: https://github.com/obra/superpowers
+
+After drafting a doc, do a review that uses this pgedge-docs skill and
+the distinct instruction to maintain formal voice, search for passive
+sentences, greedily wrap lines at 79 characters (except in tables and
+hyperlinks), and search for and fix ambiguous sentences and
+colloquialisms.
+
 ## Project Setup from Template
 
 When setting up documentation for a new pgEdge project, copy the
