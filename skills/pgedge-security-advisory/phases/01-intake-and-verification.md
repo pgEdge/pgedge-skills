@@ -32,7 +32,7 @@ Read these now, in full, from the records repository. Do not skip one because yo
 
 - **`process/DISCLOSURE-PROCESS.md`** — the disclosure process, the CVE determination tests, the timing tables, and the assessment-record template. This is the governing document.
 - **`process/FILING-GUIDE.md`** — the mechanics of filing a GitHub Security Advisory: which file holds which value, the form's field order, and the rules that do not change.
-- **A record already marked published, as a style template.** Check `records/README.md` for one whose outcome shows it was filed and published — a published record carries no confidentiality concern, unlike a record still under embargo. Read it for the shape: the fenced field block, the evidence sections, how a multi-branch affected-products block is laid out if one is available. If none of the available records happen to be published yet, work from `templates/` instead of an unpublished real one.
+- **A record already marked published, as a style template.** Identify one **by name**, from `records/README.md`'s outcome column only, then open **only that specific record's files** — `records/<that-one-name>/assessment-record.md`, `advisory.md`, `cve-record.json`. Do not grep, glob, or otherwise search across the content of `records/*` looking for a published one: doing so opens every record's files indiscriminately, including ones still under embargo, and a search that touches an unpublished record's content has already reached it, whether or not you go on to read the match. The README's outcome column is the only thing safe to search broadly, because it is metadata, not the confidential content. If the README's own outcome text does not make a record's published status unambiguous, ask the user rather than opening the record to check. If none of the available records happen to be published yet, work from `templates/` instead of an unpublished real one.
 - **`records/README.md`** — the index of every record, its subject, and its outcome.
 - **`governing-decisions.md`.** One table, one row per ruling on how the process applies to a recurring hard case — a partially masked credential fragment, whether publication discharges customer notification — held once so each new record does not re-argue settled ground. Read the whole table now; do not wait to see if a row turns out relevant, because the resemblance to a governing decision is often not obvious until partway through scoring.
 - **`tools/form-fields.py`** — the CVE JSON schema as this program actually uses it, and the helper that renders a record into GitHub form fields.
@@ -91,6 +91,20 @@ For each supported line, record: the earliest affected tag, the latest GA tag, a
 Include pre-release lines that are downloadable. A major still in beta is affected if the code is there, and its users can get it.
 
 This is also the section where the CVE released-version test is really decided. A defect present only at HEAD and never in a released tag reaches a different outcome — see Phase 3.
+
+**A tag with no branch ancestry to anything current is not evidence that its line is retired.** Some products carry an old release line whose branch was deleted or renamed after release, so the tag survives as an orphan with no path back to `main` or any live branch — do not read that absence of ancestry as absence of support. Check directly:
+
+```bash
+# Does any current branch contain this tag's commit?
+git -C /abs/path/to/product branch --all --contains v4.1.0.3
+
+# If none do, the tag is orphaned - check the product's own published
+# support lifecycle (a docs site's version navigation, a release
+# policy page) for whether that line is still supported, rather than
+# inferring retirement from git topology alone
+```
+
+Where the product's own documentation does not resolve it either, say so as an open question rather than silently assuming retired — it changes whether that line needs a patched version at all, and guessing wrong in either direction is a defect the record should surface, not absorb.
 
 ## Step 7: Scope the Report
 
