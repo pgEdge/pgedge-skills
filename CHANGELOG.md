@@ -4,6 +4,22 @@ All notable changes to pgedge-skills are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to semantic versioning.
 
+## [1.2.8] - 2026-09-16
+
+### Added
+
+- `pgedge-security-advisory` skill: takes a reported vulnerability — an
+  internal finding or an external researcher or VDP report — through
+  independent verification, CVSS scoring, and drafting of the assessment
+  record, advisory, and CVE JSON record. Verifies the vulnerable code in
+  the latest tag of every currently-supported branch rather than at HEAD
+  alone, escalates genuinely ambiguous CVSS metrics to the user instead
+  of choosing silently, and never files, requests an identifier, or
+  publishes. Reads the live disclosure-process documents in
+  `~/PROJECTS/docs/security-advisories` as the authoritative policy
+  source on every run; ships only the durable scoring judgement in
+  `standards/CVSS-JUDGMENT-CALLS.md`.
+
 ## [1.2.7] - 2026-08-04
 
 ### Changed
