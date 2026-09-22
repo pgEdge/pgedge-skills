@@ -109,7 +109,6 @@ The following product names are proper nouns; treat them as such. As a
 rule, omit "the" in front of the name unless using it as an adjective
 to describe software, files, or other artifacts:
 
-- pgEdge Cloud
 - pgEdge Enterprise Postgres
 - pgEdge Distributed Postgres
 - Enterprise Postgres
@@ -127,6 +126,13 @@ to describe software, files, or other artifacts:
 - pgEdge Docloader
 
 The exception is "the Control Plane" which always takes the article.
+
+Make sure that no occurrence of 'Starfleet' is used without 'pgEdge'
+in front of the word; the product brand is 'pgEdge Starfleet', and the
+associated product names are:
+
+pgEdge Starfleet Managed Cloud
+pgEdge Starfleet BYOC
 
 ## File Naming and Organization
 
@@ -156,8 +162,8 @@ docs/
 
 ## Line Length and Wrapping
 
-- Wrap lines at **79 characters**.
-- Wrap prose as close to 79 characters as possible without exceeding
+- Wrap lines greedily at **79 characters**.
+- Greedy wrap prose as close to 79 characters as possible without exceeding
   79 characters; the only exceptions are hyperlinks and table content,
   which must not be split (see the following bullets).
 - **Never** split hyperlinks across lines. The complete markdown link
@@ -165,6 +171,8 @@ docs/
   it exceeds 79 characters. Break prose before or after the link.
 - **Never** split table columns across lines.
 - Replace em-dashes with regular dashes (hyphens).
+- Ensure that comments inside of tables use complete sentences with
+- punctuation.
 
 ## Writing Style
 
@@ -176,6 +184,12 @@ docs/
 - Use articles (a, an, the) when appropriate.
 - Do not refer to an object as "it" unless the referent is in the same
   sentence. The pronoun is too ambiguous.
+- Do not use colloquialisms.
+- Do not use casual voice.
+- Use formal documentation voice.
+
+Make sure that the introductory paragraph of each page is mature in
+voice.
 
 ### What to Avoid
 
