@@ -187,6 +187,7 @@ docs/
 - Do not use colloquialisms.
 - Do not use casual voice.
 - Use formal documentation voice.
+- Use Claude to search for and correct ambiguous sentences.
 
 Make sure that the introductory paragraph of each page is mature in
 voice.
@@ -275,6 +276,7 @@ The view includes the following metrics:
 - Indent code blocks properly within numbered list items, formatted
   using the rules above.
 - Do not use bold font in numbered lists.
+- Do not use Step numbers in a heading (like Step 1.).
 
 ## Code Formatting
 
@@ -314,6 +316,8 @@ The view includes the following metrics:
 - Avoid special characters that may not render correctly in all
   formats.
 - Use words rather than symbols to convey meaning.
+- Use complete sentences in tables when appropriate (like in a
+  Description column).
 
 ## Hyperlinks
 
@@ -339,7 +343,7 @@ bulleted list.
 ## Next Steps Sections
 
 - Include a "Next Steps" section (`## Next Steps`) at the end of
-  tutorial and conceptual guide documents.
+  tutorial and installation documents.
 - Provide 2-4 bulleted links to related documentation.
 - Each bullet should be a complete sentence describing what the linked
   document covers, using the pattern: "- The Document Name document
