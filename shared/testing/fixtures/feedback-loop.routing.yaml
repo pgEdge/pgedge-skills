@@ -1,0 +1,37 @@
+# shared/testing/fixtures/feedback-loop.routing.yaml
+# Routing fixtures for the feedback-loop subagent.
+# See .claude/specs/2026-05-12-feedback-loop.md §7.
+# Executed by the §3.12 harness on N=3 majority vote.
+
+should_fire:
+  - "run the feedback loop on PR 42"
+  - "iterate on this PR until CI is green and threads are resolved"
+  - "watch and fix CI failures on branch main"
+  - "address all CodeRabbit comments on #42 and re-check"
+  - "loop until the PR is clean"
+  - "keep iterating on PR 42 until CI passes and reviewer threads are addressed"
+
+should_not_fire:
+  - phrase: "review the PR for me"
+    expected_skill: pgedge-review-pr
+  - phrase: "fix issue 42"
+    expected_skill: pgedge-fix-issue
+  - phrase: "open a PR for these changes"
+    expected_skill: null
+    reason: "PR creation is not this primitive's job"
+  - phrase: "summarize the PR diff"
+    expected_skill: pgedge-review-pr
+  - phrase: "rebase the branch onto main"
+    expected_skill: null
+    reason: "out of scope"
+  - phrase: "merge the PR"
+    expected_skill: null
+    reason: "out of scope"
+  - phrase: "watch the build"
+    expected_skill: pgedge-monitor-actions
+    reason: "user invokes the caller, which dispatches us"
+  - phrase: "check CI status"
+    expected_skill: pgedge-monitor-actions
+  - phrase: "use my private fix-issue skill"
+    expected_skill: null
+    reason: "private-skills/ is reference material only"
