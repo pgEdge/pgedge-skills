@@ -213,7 +213,11 @@ voice.
   hierarchically previous heading level.
 - Every heading must be followed by an introductory sentence or
   paragraph explaining what the section covers.
+- Start each heading with a gerund when possible; for example,
+  Configuring the Server or Determining Property Values,
+  Connecting to the Service.
 - **Never** use bold font within a heading.
+- **Never** include Step details (i.e. Step 1.) in a heading.
 
 ## Bulleted Lists
 
