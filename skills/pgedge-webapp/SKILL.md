@@ -163,7 +163,7 @@ constraint.
 
 Scaffolded projects ship with `.devcontainer/devcontainer.json` plus
 `post-create.sh`, mirroring the `pgedge-skills` repo's own pattern. The
-container provisions Go 1.26 and Node 24, installs Helm via
+container provisions Go 1.26.10 and Node 24, installs Helm via
 `post-create.sh`, runs `go mod download` and `npm ci` so the dev loop
 starts hot, and forwards the templated HTTP port. The
 `overrideFeatureInstallOrder` block is load-bearing — it ensures Node
@@ -204,7 +204,7 @@ Hard rules:
 
 The template ships with three GitHub Actions workflows:
 
-- `.github/workflows/ci-server.yml` — Go 1.26: `go mod verify`, vet,
+- `.github/workflows/ci-server.yml` — Go 1.26.10 + 1.27.3: `go mod verify`, vet,
   gofmt, golangci-lint, build, coverage gate.
 - `.github/workflows/ci-client.yml` — Node 22 + 24 matrix:
   typecheck, lint, test:coverage.

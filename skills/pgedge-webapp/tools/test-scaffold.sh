@@ -9,7 +9,7 @@
 set -euo pipefail
 
 # Force auto-toolchain so the harness works on hosts that don't yet ship
-# Go 1.26. The scaffold's go.mod pins `go 1.26`. Override only with explicit
+# Go 1.26.10. The scaffold's go.mod pins `go 1.26.10`. Override only with explicit
 # HARNESS_GOTOOLCHAIN if you really want a different value.
 export GOTOOLCHAIN="${HARNESS_GOTOOLCHAIN:-auto}"
 
